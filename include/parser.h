@@ -5,6 +5,7 @@
 #include "common.h"
 #include <vector>
 
+using astptr = std::unique_ptr<ASTNode>;
 
 class parser {
     public:
@@ -12,6 +13,17 @@ class parser {
     u64 indx = 0;
     parser(const std::vector<token> &a) {
         src = a;
+    }
+    
+    astptr parse_expr(token tok);
+    astptr parse_term(token tok);
+    astptr parse_factor(token tok);
+    astptr parse_statement(token tok);
+    token consume() {
+        if(indx > src.size()) {
+            std::cerr << "Error: (Parser) - unexpected end of input" << "\n";
+        }
+        return src[indx++];
     }
     token consume(token expected) {
         if(indx > src.size()) {

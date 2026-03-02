@@ -6,6 +6,7 @@
 #include <iostream>
 
 enum token_type {
+    VOID_TOK,
     INT,
     DOUBLE,
     STRING,
@@ -39,6 +40,12 @@ enum token_type {
     DOT,
     TWODOTS,
     SEMI,
+    IF,
+    ELIF,
+    ELSE,
+    WHILE,
+    FOR,
+    FUNC,
     ID,
     EOF_
 };
