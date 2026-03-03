@@ -4,14 +4,21 @@
 #include <string>
 #include "lexer.h"
 
+class ASTNode;
+
+using astptr = std::unique_ptr<ASTNode>;
+
 class ASTNode {
 public:
     virtual ~ASTNode() = default;
-
-    token tok;
-    std::unique_ptr<ASTNode> left;
-    std::unique_ptr<ASTNode> right;
-    ASTNode(std::unique_ptr<ASTNode> left_, std::unique_ptr<ASTNode> right_, const token &tok_)
-    : left(std::move(left_)), right(std::move(right_)), tok(tok_) {}
 };
 
+
+class BinaryNode : public ASTNode {
+	public:
+	token op;
+	astptr left;
+	astptr right;
+	BinaryNode(astptr left_, astptr  right_, const token &op_) 
+	            : left(std::move(left_)), right(std::move(right_)), op(op_) {};
+};

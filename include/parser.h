@@ -5,7 +5,6 @@
 #include "common.h"
 #include <vector>
 
-using astptr = std::unique_ptr<ASTNode>;
 
 class parser {
     public:
