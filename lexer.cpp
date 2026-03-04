@@ -204,6 +204,7 @@ std::vector<token> lexer::lex(std::string src) {
       char *endptr;
       lexed.push_back(create_token(
           INT, static_cast<token_value>(strtoll(number.c_str(), &endptr, 10))));
+      continue;
     }
     i++;
   }

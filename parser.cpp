@@ -14,11 +14,7 @@ astptr parser::parse_factor() {
     else if(tok.type == token_type::L_BRACKET) {
         astptr node = parse_expr();
 
-        token close = consume();
-        if (close.type != token_type::R_BRACKET) {
-            std::cerr << "Missing closing bracket\n";
-            exit(EXIT_FAILURE);
-        }
+        token close = consume(token_type::R_BRACKET);
 
         return node;
 
@@ -31,7 +27,7 @@ astptr parser::parse_factor() {
 
 astptr parser::parse_unary() {
     token op = peek(1)[0];
-    if (op.type == token_type::PLUS || op.type != token_type::MINUS) {
+    if (op.type == token_type::PLUS || op.type == token_type::MINUS) {
         consume();
         astptr unary = parse_unary();
         return std::make_unique<UnaryNode>(std::move(unary), op.type);
@@ -73,24 +69,29 @@ astptr parser::parse_expr() {
 
 astptr parser::parse_statement() {
     token tok = peek(1)[0];
-
+    /*
     switch(tok.type) {
         case token_type::IF:
             return parse_if_statement();
         case token_type::WHILE:
             return parse_while_statement();
-        case token_type::IDENTIFIER: 
+        case token_type::FOR: 
+            return parse_for_statement();
+        case token_type::FUNC:
+            return parse_func_statement();
+        case token_type::ID: 
             return parse_assignment();
         default:
             return parse_expr();  
     }
-
+    */
+    return parse_expr();
 }
 
 std::vector<std::unique_ptr<ASTNode>> parser::parse() {
     std::vector<std::unique_ptr<ASTNode>> parsed;
-    while(indx<src.size()) {
-        parse_statement();
+    while(indx<src.size() && src[indx].type != token_type::EOF_) {
+        parsed.push_back(parse_statement());
     }
     return parsed;
 }

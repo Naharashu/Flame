@@ -19,18 +19,25 @@ class parser {
     astptr parse_term();
     astptr parse_factor();
     astptr parse_statement();
+    astptr parse_if_statement();
+    astptr parse_while_statement();
+    astptr parse_for_statement();
+    astptr parse_func_statement();
+    astptr parse_assignment();
     token consume() {
         if(indx > src.size()) {
             std::cerr << "Error: (Parser) - unexpected end of input" << "\n";
         }
         return src[indx++];
     }
-    token consume(token expected) {
-        if(indx > src.size()) {
+    token consume(token_type expected) {
+        if(indx >= src.size()) {
             std::cerr << "Error: (Parser) - unexpected end of input" << "\n";
+            exit(1);
         }
-        if(src[indx].type != expected.type) {
+        if(src[indx].type != expected) {
             std::cerr << "Error: (Parser) - unexpected token " << src[indx].type << "\n";
+            exit(1);
         }
         return src[indx++];
     }
