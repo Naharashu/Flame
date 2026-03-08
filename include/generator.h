@@ -163,10 +163,14 @@ class generator {
                 return "  return (" + genCode(n->value) + ')';
             }
             case ast_type::IF: {
+                std::string code;
                 auto n = static_cast<IfNode*>(node.get());
-                if(n->type!=ELSE) cpp_code += " if(" + genCode(n->cond) + ")" + genCode(n->block);
-                else cpp_code += " else " + genCode(n->block);
-                return "";
+                if(n->cond) {
+                    code += (n->type == IF ? "if(" : "else if(") + genCode(n->cond) + ")" + genCode(n->block);
+                }
+                else code += " else " + genCode(n->block);
+                if(n->next) code += " " + genCode(n->next);
+                return code;
             }
             default:
                 return "";
@@ -180,7 +184,7 @@ class generator {
                         "using namespace std;\n";
         cpp_code = "int main() {\n";
         for(auto &x : nodes) {
-            if(x->kind != ast_type::MODULE && x->kind != ast_type::BLOCK) cpp_code += genCode(x) + ';';
+            if(x->kind != ast_type::MODULE && x->kind != ast_type::BLOCK && x->kind != ast_type::IF) cpp_code += genCode(x) + ';';
             else cpp_code += genCode(x);
             cpp_code += '\n';
         }

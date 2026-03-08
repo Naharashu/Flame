@@ -1,0 +1,16 @@
+u8 a;
+i8 b;
+u16 c;
+i16 d;
+u32 e;
+i32 f;
+u64 g;
+i64 h;
+f32 i;
+f64 j;
+bool m;
+string l;
+
+void void_func() {
+    print("FooBar");
+}

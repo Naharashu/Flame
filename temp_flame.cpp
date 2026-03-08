@@ -1,15 +1,15 @@
 #include <iostream>
 #include <cstdint>
 using namespace std;
- int32_t  pow2( int32_t a)  {
-  return ((a * a));
- }
 int main() {
-;
- int32_t a=pow2(2 );
- if((a == 4)) {
-std::cout << "abc" << std::endl;
- };
-std::cout << a << std::endl;
+ int32_t a=0;
+std::cin  >> a;
+if((a < 10)) {
+std::cout << "a is less then 10" << std::endl;
+ } else if((a > 10)) {
+std::cout << "a is bigger than 10" << std::endl;
+ }  else  {
+std::cout << "idk" << std::endl;
+ }
 return 0;
 }

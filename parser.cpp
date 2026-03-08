@@ -31,6 +31,8 @@ astptr parser::parse_factor() {
     return std::make_unique<Node>(tok);
   } else if (tok.type == token_type::TRUE) {
     return std::make_unique<Node>(tok);
+  } else if (tok.type == token_type::VOID_TYPE) {
+    return std::make_unique<Node>(tok);
   } else if (tok.type == token_type::FALSE) {
     return std::make_unique<Node>(tok);
   } else if (tok.type == token_type::STRING) {
@@ -58,7 +60,7 @@ astptr parser::parse_factor() {
 
   } else {
     std::cerr << "Error in parsing factor -> " + std::to_string(tok.type) +
-                     " at " + std::to_string(indx-1) + '\n';
+                     " at " + std::to_string(indx - 1) + '\n';
     exit(EXIT_FAILURE);
   }
 }
@@ -171,7 +173,7 @@ astptr parser::parse_return() {
 astptr parser::parse_block() {
   consume(L_BRACES);
   std::vector<astptr> stmts;
-  while(peek().type != R_BRACES) {
+  while (peek().type != R_BRACES) {
     stmts.push_back(parse_statement());
   }
   consume(R_BRACES);
@@ -191,12 +193,13 @@ astptr parser::parse_func_statement() {
   }
   consume(R_BRACKET);
   token return_type = consume();
-  if(!is_it_type(return_type) && return_type.type != VOID_TYPE) {
+  if (!is_it_type(return_type) && return_type.type != VOID_TYPE) {
     std::cerr << "Unknown return type in " + variant2string(id.value) << '\n';
     exit(EXIT_FAILURE);
   }
   astptr block = parse_block();
-  return std::make_unique<FuncNode>(id,return_type, std::move(args_), std::move(block));
+  return std::make_unique<FuncNode>(id, return_type, std::move(args_),
+                                    std::move(block));
 }
 
 astptr parser::parse_if_statement() {
@@ -205,21 +208,24 @@ astptr parser::parse_if_statement() {
   astptr cond = parse_or();
   consume(R_BRACKET);
   astptr block = parse_block();
-  astptr node = std::make_unique<IfNode>(std::move(cond), std::move(block), astptr{}, IF);
-  IfNode* current = static_cast<IfNode*>(node.get()); 
-  while(peek().type == ELIF || peek().type == ELSE) {
+  astptr node =
+      std::make_unique<IfNode>(std::move(cond), std::move(block), astptr{}, IF);
+  IfNode *current = static_cast<IfNode *>(node.get());
+  while (peek().type == ELIF || peek().type == ELSE) {
     token a = consume(); // ELIF or ELSE
-    if(a.type == ELIF) {
+    if (a.type == ELIF) {
       consume(L_BRACKET);
       astptr cond_elif = parse_or();
       consume(R_BRACKET);
       astptr block_elif = parse_block();
-      current->next = std::make_unique<IfNode>(std::move(cond_elif), std::move(block_elif), astptr{}, ELIF);
-      current = static_cast<IfNode*>(current->next.get()); 
+      current->next = std::make_unique<IfNode>(
+          std::move(cond_elif), std::move(block_elif), astptr{}, ELIF);
+      current = static_cast<IfNode *>(current->next.get());
     }
-    if(a.type == ELSE) {
+    if (a.type == ELSE) {
       astptr block_else = parse_block();
-      current->next = std::make_unique<IfNode>(astptr{}, std::move(block_else), astptr{}, ELSE);
+      current->next = std::make_unique<IfNode>(astptr{}, std::move(block_else),
+                                               astptr{}, ELSE);
       break;
     }
   }
@@ -227,7 +233,7 @@ astptr parser::parse_if_statement() {
 }
 
 astptr parser::parse_assignment() {
-  if(peek().type == ID && peek(1).type == L_BRACKET) {
+  if (peek().type == ID && peek(1).type == L_BRACKET) {
     astptr node = parse_factor();
     consume(SEMI);
     return node;
@@ -258,7 +264,7 @@ astptr parser::parse_statement() {
   token tok = peek();
   switch (tok.type) {
   case token_type::IF:
-      return parse_if_statement();
+    return parse_if_statement();
   /*
   case token_type::WHILE:
       return parse_while_statement();
