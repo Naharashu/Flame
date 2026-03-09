@@ -297,6 +297,12 @@ astptr parser::parse_assignment() {
   }
   token type = consume();
   if (type.type == ID) {
+    if(peek().type == PLUS || peek().type == MINUS || peek().type == STAR || peek().type == SLASH) {
+      token_type op = consume().type;
+      consume(EQ);
+      astptr value = parse_or();
+      return std::make_unique<ReAssignmentNodeExpr>(op, type, value);
+    }
     consume(EQ);
     astptr value = parse_or();
     consume(SEMI);

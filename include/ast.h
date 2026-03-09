@@ -26,6 +26,7 @@ typedef enum class ast_type {
 	CONTINUE,
 	VAR_INC_DEC,
 	FOR,
+	REASSIGNVAR,
 } ast_type;
 
 using astptr = std::unique_ptr<ASTNode>;
@@ -134,6 +135,20 @@ class AssignmentNodeExpr : public ASTNode {
 	astptr val;
 	AssignmentNodeExpr(const token_type &t_, const token &id_, astptr val_) : type_(t_), id(id_), val(std::move(val_)) {
 		kind = ast_type::DEFINEVAR;
+	};
+
+	void print() const override {
+		std::cout << id.type << '\n';
+	}
+};
+
+class ReAssignmentNodeExpr : public ASTNode {
+	public:
+	token_type type_;
+	token id;
+	astptr val;
+	ReAssignmentNodeExpr(const token_type &t_, const token &id_, astptr val_) : type_(t_), id(id_), val(std::move(val_)) {
+		kind = ast_type::REASSIGNVAR;
 	};
 
 	void print() const override {
