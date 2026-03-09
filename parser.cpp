@@ -111,7 +111,7 @@ astptr parser::parse_expr() {
 
 astptr parser::parse_use() {
   consume(USE);
-  std::string name = variant2string(consume(ID).value) + "." + "cpp";
+  std::string name = variant2string(consume(ID).value) + "." + "flame";
   consume(SEMI);
   return std::make_unique<ModuleNode>(name);
 }
@@ -241,6 +241,23 @@ astptr parser::parse_while_statement() {
   return std::make_unique<LoopNode>(std::move(cond), std::move(block), WHILE);
 }
 
+astptr parser::parse_for_statement() {
+  consume(FOR);
+  consume(L_BRACKET);
+  astptr var = parse_assignment();
+  astptr cond = parse_or();
+  consume(SEMI);
+  token_value id = consume(ID).value;
+  token a = consume();
+  consume();
+  astptr thing;
+  if(a.type == PLUS) thing = std::make_unique<IncDecVarNode>(0, id);
+  else thing = std::make_unique<IncDecVarNode>(1, id);
+  consume(R_BRACKET);
+  astptr block = parse_block();
+  return std::make_unique<ForNode>(std::move(cond), std::move(block), std::move(var), std::move(thing));
+}
+
 astptr parser::parse_break_continue() {
   token a = consume();
   if(a.type == BREAK) {
@@ -262,6 +279,21 @@ astptr parser::parse_assignment() {
     astptr node = parse_factor();
     consume(SEMI);
     return node;
+  }
+  else if ((
+    peek().type == ID &&
+    peek(1).type == PLUS &&
+    peek(2).type == PLUS 
+  ) || (
+    peek().type == ID &&
+    peek(1).type == MINUS &&
+    peek(2).type == MINUS
+  )) {
+    token_value id = consume(ID).value;
+    token a = consume();
+    consume();
+    if(a.type == PLUS) return std::make_unique<IncDecVarNode>(0, id);
+    else return std::make_unique<IncDecVarNode>(1, id);
   }
   token type = consume();
   if (type.type == ID) {
@@ -292,10 +324,8 @@ astptr parser::parse_statement() {
     return parse_if_statement();
   case token_type::WHILE:
       return parse_while_statement();
-  /*
   case token_type::FOR:
       return parse_for_statement();
-  */
   case token_type::L_BRACES:
     return parse_block();
   case token_type::FUNC:

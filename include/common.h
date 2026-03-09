@@ -83,31 +83,31 @@ inline bool is_literal(token_type t) {
 inline std::string type_in_cpp(token a) {
   std::string type;
   if (a.type == BYTE_TYPE)
-    type = " int8_t ";
+    type = "int8_t ";
   if (a.type == WORD_TYPE)
-    type = " int16_t ";
+    type = "int16_t ";
   if (a.type == INT_TYPE)
-    type = " int32_t ";
+    type = "int32_t ";
   if (a.type == LONG_TYPE)
-    type = " int64_t ";
+    type = "int64_t ";
   if (a.type == FLOAT_TYPE)
-    type = " float ";
+    type = "float ";
   if (a.type == DOUBLE_TYPE)
-    type = " double ";
+    type = "double ";
   if (a.type == STRING_TYPE) {
-    type = " std::string ";
+    type = "std::string ";
   }
   if (a.type == BOOL_TYPE)
-    type = " bool ";
+    type = "bool ";
   if (a.type == UNSIGNED_8_TYPE)
-    type = " uint8_t ";
+    type = "uint8_t ";
   if (a.type == UNSIGNED_16_TYPE)
-    type = " uint16_t ";
+    type = "uint16_t ";
   if (a.type == UNSIGNED_32_TYPE)
-    type = " uint32_t ";
+    type = "uint32_t ";
   if (a.type == UNSIGNED_64_TYPE)
-    type = " uint64_t ";
+    type = "uint64_t ";
   if (a.type == VOID_TYPE)
-    type = " void ";
+    type = "void ";
   return type;
 }

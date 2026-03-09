@@ -2,4 +2,7 @@ func pow2(i64 a) i64 {
     return a*a;
 }
 
-print(pow2(5));
+func main() i32 {
+    print(pow2(5));
+    return 0;
+}

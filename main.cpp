@@ -3,13 +3,14 @@
 #include "include/parser.h"
 #include "include/generator.h"
 #include <cstdlib>
+#include <cstring>
 #include <fstream>
 #include <string>
 
 int main(int argc, char* argv[]) { 
 	if(argc>1) {
 		if(strcmp(argv[1], "-v")==0) {
-			std::cout << "Flame compiler 0.2\nBy Naharashu\n";
+			std::cout << "Flame compiler 0.3\nBy Naharashu\n";
 			return 0;
 		}
 	}

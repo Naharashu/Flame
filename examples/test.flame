@@ -1,8 +1,10 @@
 func pow2(i32 a) i32 {
     return a*a;
 }
-i32 a = pow2(2);
-if(a==4) {
-    print("abc");
+
+func main() i32 {
+    for(i32 i=0;i<5;i++) {
+        print(pow2(i));
+    }
+    return 0;
 }
-print(a);

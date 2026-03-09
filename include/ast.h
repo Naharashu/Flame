@@ -2,6 +2,7 @@
 #include <memory>
 #include <vector>
 #include <string>
+#include "common.h"
 #include "lexer.h"
 
 class ASTNode;
@@ -22,7 +23,9 @@ typedef enum class ast_type {
 	IF,
 	LOOP,
 	BREAK,
-	CONTINUE
+	CONTINUE,
+	VAR_INC_DEC,
+	FOR,
 } ast_type;
 
 using astptr = std::unique_ptr<ASTNode>;
@@ -31,7 +34,7 @@ class ASTNode {
 public:
 	ast_type kind;
     virtual ~ASTNode() = default;
-	virtual void print() const = 0;
+	virtual void print() const {}
 };
 
 class Node : public ASTNode {
@@ -197,6 +200,18 @@ class LoopNode : public ASTNode {
 	void print() const override {}
 };
 
+class ForNode : public ASTNode {
+	public:
+	astptr cond;
+	astptr block;
+	astptr var;
+	astptr thing;
+	ForNode(astptr c, astptr b, astptr v, astptr t) : cond(std::move(c)), block(std::move(b)), var(std::move(v)), thing(std::move(t)) {
+		kind = ast_type::FOR;
+	}
+	void print() const override {}
+};
+
 
 class ModuleNode : public ASTNode {
 	public:
@@ -208,12 +223,23 @@ class ModuleNode : public ASTNode {
 	void print() const override {}
 };
 
-struct BreakNode : ASTNode {
+class BreakNode : public ASTNode {
+	public:
     BreakNode() { kind = ast_type::BREAK; }
 	void print() const override {}
 };
 
-struct ContinueNode : ASTNode {
+class ContinueNode : public ASTNode {
+	public:
     ContinueNode() { kind = ast_type::CONTINUE; }
 	void print() const override {}
+};
+
+class IncDecVarNode : public ASTNode {
+	public:
+	u8 type;
+	token_value id;
+	IncDecVarNode(u8 t, token_value n) : type(t), id(n) {
+		kind = ast_type::VAR_INC_DEC;
+	}
 };
