@@ -237,6 +237,8 @@ std::string ArrayAccessNode::gen(generator &g) {
 
 std::string ModuleNode::gen(generator &g) {
   std::ostringstream code;
-  code << g.generate(module);
-  return code.str();
+  generator gen;
+  code << gen.generate(module);
+  g.header += code.str();
+  return "";
 }

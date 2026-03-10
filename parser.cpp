@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 #include <fstream>
+#include <sstream>
 
 astptr parser::parse_factor() {
   token tok = consume();
