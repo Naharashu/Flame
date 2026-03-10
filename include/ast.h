@@ -28,6 +28,7 @@ typedef enum class ast_type {
 	FOR,
 	REASSIGNVAR,
 	ARRAY,
+	ARRAY_ACCESS,
 } ast_type;
 
 using astptr = std::unique_ptr<ASTNode>;
@@ -262,11 +263,20 @@ class IncDecVarNode : public ASTNode {
 
 class ArrayNode : public ASTNode {
 	public:
-	token_type type;
+	token type;
 	std::vector<astptr> values;
 	std::string id;
 	long size;
-	ArrayNode(const token_type &t, std::vector<astptr> v, const std::string &i, long s) : type(t), values(std::move(v)), id(i), size(s) {
+	ArrayNode(const token &t, std::vector<astptr> v, const std::string &i, long s) : type(t), values(std::move(v)), id(i), size(s) {
 		kind = ast_type::ARRAY;
 	}
+};
+
+class ArrayAccessNode : public ASTNode {
+	public:
+	token id;
+	astptr index;
+	ArrayAccessNode(token id_, astptr i_) : id(id_), index(std::move(i_)) {
+		kind = ast_type::ARRAY_ACCESS;
+	}	
 };

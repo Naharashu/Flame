@@ -59,9 +59,10 @@ astptr parser::parse_factor() {
     return node;
 
   } else if (peek().type == L_SQ_BRACKET) {
-    i64 i = variant2int<long long>(consume().value);
+    consume();
+    astptr i = parse_expr();
     consume(R_SQ_BRACKET);
-    return std::make_unique<ArrayAccessNode>(tok, i);
+    return std::make_unique<ArrayAccessNode>(tok, std::move(i));
   } else {
     std::cerr << "Error in parsing factor -> " + std::to_string(tok.type) +
                      " at " + std::to_string(indx - 1) + '\n';
@@ -279,7 +280,7 @@ astptr parser::parse_array() {
     std::cerr << "Error in parsing array, expected syntax like this: Type[]";
     exit(1);
   }
-  token_type type = consume().type;
+  token type = consume();
   consume(L_SQ_BRACKET);
   token size;
   bool size_defined = false;
@@ -292,7 +293,7 @@ astptr parser::parse_array() {
   if (peek().type == SEMI) {
     if (size_defined)
       return std::make_unique<ArrayNode>(type, std::vector<astptr>{}, id,
-                                         variant2int<long>(size.value));
+                                         variant2int<long long>(size.value));
     else
       return std::make_unique<ArrayNode>(type, std::vector<astptr>{}, id, -1);
   }
@@ -301,20 +302,21 @@ astptr parser::parse_array() {
   std::vector<astptr> values;
   while (peek().type != R_SQ_BRACKET) {
     astptr value = parse_factor();
-    consume(COMA);
+    if (peek().type == COMA)
+        consume();
     values.push_back(std::move(value));
   }
   consume(R_SQ_BRACKET);
   consume(SEMI);
   if (size_defined)
     return std::make_unique<ArrayNode>(type, std::move(values), id,
-                                       variant2int<long>(size.value));
+                                       variant2int<long long>(size.value));
   else
     return std::make_unique<ArrayNode>(type, std::move(values), id, -1);
 }
 
 astptr parser::parse_assignment() {
-  if (peek().type == ID && peek(1).type == L_BRACKET) {
+  if (peek().type == ID && (peek(1).type == L_BRACKET||peek(1).type==L_SQ_BRACKET)) {
     astptr node = parse_factor();
     consume(SEMI);
     return node;
@@ -331,7 +333,7 @@ astptr parser::parse_assignment() {
       return std::make_unique<IncDecVarNode>(1, id);
   }
   if (is_it_type(peek()) && peek(1).type == L_SQ_BRACKET)
-    return parse_array();
+      return parse_array();
   token type = consume();
   if (type.type == ID) {
     if (peek().type == PLUS || peek().type == MINUS || peek().type == STAR ||

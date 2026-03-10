@@ -290,6 +290,34 @@ public:
       }
       return variant2string(n->id.value) + op + genCode(n->val);
     }
+    case ast_type::ARRAY: {
+    	auto n = static_cast<ArrayNode*>(node.get());
+    	std::string code;
+    	code += type_in_cpp(n->type);
+    	std::string values_ = "{";
+    	if(!n->values.empty()) {
+    		for(u64 i=0;i<n->values.size();i++) {
+    			values_ += genCode(n->values[i]);
+    			if(i+1<n->values.size()) values_ += ", ";
+    		}
+    		values_ += "}";
+    	}
+    	else {
+    		values_ = "";
+    	}
+    	if(n->size!=-1) {
+    		if(!n->values.empty()) return n->id + "[" + std::to_string(n->size) + "] = " + values_; 
+    		return n->id + "[" + std::to_string(n->size) + "]";
+    	}
+    	else {
+    		if(!n->values.empty()) return n->id + "[] = " + values_;
+    		return n->id + "[]";
+    	}
+    }
+    case ast_type::ARRAY_ACCESS: {
+    	auto n = static_cast<ArrayAccessNode*>(node.get());
+    	return variant2string(n->id.value) + "[" + genCode(n->index) + "]";
+    }
     default:
       throw std::runtime_error("Unknown AST node");
     }
