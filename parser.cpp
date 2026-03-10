@@ -10,34 +10,15 @@
 
 astptr parser::parse_factor() {
   token tok = consume();
-  if (tok.type == token_type::BYTE) {
-    return std::make_unique<Node>(tok);
-  }
-  if (tok.type == token_type::WORD) {
-    return std::make_unique<Node>(tok);
-  }
-  if (tok.type == token_type::INT) {
-    return std::make_unique<Node>(tok);
-  }
-  if (tok.type == token_type::LONG) {
-    return std::make_unique<Node>(tok);
-  } else if (tok.type == token_type::NULL_) {
-    return std::make_unique<Node>(tok);
-  }
-  if (tok.type == token_type::FLOAT) {
-    return std::make_unique<Node>(tok);
-  }
-  if (tok.type == token_type::DOUBLE) {
-    return std::make_unique<Node>(tok);
-  } else if (tok.type == token_type::TRUE) {
-    return std::make_unique<Node>(tok);
-  } else if (tok.type == token_type::VOID_TYPE) {
-    return std::make_unique<Node>(tok);
-  } else if (tok.type == token_type::FALSE) {
-    return std::make_unique<Node>(tok);
-  } else if (tok.type == token_type::STRING) {
-    return std::make_unique<Node>(tok);
-  } else if (tok.type == token_type::ID) {
+  if (tok.type == token_type::BYTE || tok.type == token_type::WORD ||
+      tok.type == token_type::INT || tok.type == token_type::LONG ||
+      tok.type == token_type::NULL_ || tok.type == token_type::FLOAT ||
+      tok.type == token_type::DOUBLE || tok.type == token_type::TRUE ||
+      tok.type == token_type::FALSE || tok.type == token_type::VOID_TYPE ||
+      tok.type == token_type::STRING) {
+       return std::make_unique<Node>(tok);
+      } 
+  else if (tok.type == token_type::ID) {
     if (peek().type == L_BRACKET) {
       consume();
       std::vector<astptr> args_;
@@ -58,7 +39,7 @@ astptr parser::parse_factor() {
 
     return node;
 
-  } else if (peek().type == L_SQ_BRACKET) {
+  } else if (tok.type == ID && peek().type == L_SQ_BRACKET) {
     consume();
     astptr i = parse_expr();
     consume(R_SQ_BRACKET);
