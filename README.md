@@ -2,10 +2,11 @@
 Flame is programming language
 
 
+
 #### Changelog
-0.3:
-  > added for,
+0.4:
+  > added modules,
 
-  > added ++, -- and +=/-=/*= and /= for variables,
+  > added mod(%),
 
-  > added arrays
+  > fixed arrays and added change value of array
