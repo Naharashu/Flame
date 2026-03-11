@@ -280,57 +280,6 @@ std::vector<token> lexer::lex(std::string src) {
   return lexed;
 }
 
-std::string disassemble_tok(token tok) {
-  switch (tok.type) {
-    case BYTE_TYPE: {
-      return "i8";
-    }
-    case WORD_TYPE: {
-      return "i16";
-    }
-    case INT_TYPE: {
-      return "i32";
-    }
-    case LONG_TYPE: {
-      return "i32";
-    }
-    case AUTO_TYPE: {
-      return "auto";
-    }
-    case UNSIGNED_8_TYPE: {
-      return "u8";
-    }
-    case UNSIGNED_16_TYPE: {
-      return "u32";
-    }
-    case UNSIGNED_32_TYPE: {
-      return "u32";
-    }
-    case UNSIGNED_64_TYPE: {
-      return "u64";
-    }
-    case FLOAT_TYPE: {
-      return "f32";
-    }
-    case DOUBLE_TYPE: {
-      return "f64";
-    }
-    case BOOL_TYPE: {
-      return "bool";
-    }
-    case STRING_TYPE: {
-      return "bool";
-    }
-    case SEMI: {
-      return ";";
-    }
-    case ID: {
-      return variant2string(tok.value);
-    }
-    default:
-      return std::to_string(tok.type);
-  }
-}
 
 std::string disassemble_tok_type(token_type type) {
   switch (type) {
@@ -344,7 +293,7 @@ std::string disassemble_tok_type(token_type type) {
       return "i32";
     }
     case LONG_TYPE: {
-      return "i32";
+      return "i64";
     }
     case AUTO_TYPE: {
       return "auto";
@@ -353,7 +302,7 @@ std::string disassemble_tok_type(token_type type) {
       return "u8";
     }
     case UNSIGNED_16_TYPE: {
-      return "u32";
+      return "u16";
     }
     case UNSIGNED_32_TYPE: {
       return "u32";
@@ -371,7 +320,7 @@ std::string disassemble_tok_type(token_type type) {
       return "bool";
     }
     case STRING_TYPE: {
-      return "bool";
+      return "string";
     }
     case SEMI: {
       return ";";
