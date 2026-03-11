@@ -19,11 +19,11 @@ template <typename T> inline long long variant2int(token_value &val) {
   return std::get<T>(val);
 }
 
-inline long long variant2double(token_value &val) {
+inline double variant2double(token_value &val) {
   return std::get<double>(val);
 }
 
-inline long long variant2bool(token_value &val) { return std::get<bool>(val); }
+inline bool variant2bool(token_value &val) { return std::get<bool>(val); }
 
 template <typename T> bool fits(long long v) {
   return v >= std::numeric_limits<T>::min() &&
@@ -31,7 +31,7 @@ template <typename T> bool fits(long long v) {
 }
 
 inline bool is_it_value(token a) {
-  if (a.type >= 13 && a.type <= 22)
+  if (a.type >= BYTE && a.type <= NULL_)
     return true;
   return false;
 }

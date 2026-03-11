@@ -1,0 +1,14 @@
+func abs(i64 a) i64 {
+    if(a > 0) {
+        return a;
+    }
+    return -a;
+}
+
+func sqrt(f64 a) f64 {
+    f64 x = 1.0;
+    for(i32 i=0;i<4;i++) {
+        x = 0.5*(x+(a/x));
+    }
+    return x;
+}

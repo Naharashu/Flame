@@ -45,7 +45,7 @@ std::string AssignmentNodeExpr::gen(generator &g) {
   if (type_ == AUTO_TYPE)
     type = "auto ";
   return type + variant2string(id.value) +
-         (val ? "=" + nullval : "=" + g.gencode(val));
+         (val ? "=" + g.gencode(val) : "=" + nullval );
 }
 
 std::string UnaryNode::gen(generator &g) {

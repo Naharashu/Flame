@@ -1,0 +1,6 @@
+use stdlib;
+
+func main() i32 {
+    print(sqrt(abs(-25)));
+    return 0;
+}

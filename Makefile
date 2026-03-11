@@ -15,9 +15,10 @@ build/%.o: %.cpp
 	$(CXX) $(CXX_FLAGS) -c $< -o $@
 
 install:
-	mkdir -p $(HOME_)/bin/flame
-	cp ./flame $(HOME_)/bin/flame/flame
-	ln -s $(HOME_)/bin/flame/flame flame
+	cp flame $(HOME_)/.local/bin/flame
+
+uninstall:
+	rm -f $(HOME_)/.local/bin/flame
 
 clean:
 	rm -f flame

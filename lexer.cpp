@@ -2,6 +2,7 @@
 #include "include/common.h"
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <string>
 #define u64 long long
 
@@ -251,31 +252,25 @@ std::vector<token> lexer::lex(std::string src) {
     }
     if (is_int(c)) {
       std::string number;
-      while (i < src.size() && is_int(src[i])) {
-        if (src[i + 1] == '.') {
-          number += src[i++];
-          while (i < src.size() && is_int(src[i])) {
-            number += src[i++];
-          }
-          char *endptr;
-          lexed.push_back(create_token(DOUBLE, static_cast<token_value>(strtod(
-                                                   number.c_str(), &endptr))));
-        }
-        number += src[i];
-        i++;
+      while ((i < src.size() && is_int(src[i])) || src[i] == '.') {
+        number += src[i++];
       }
       char *endptr;
-      auto val_ = strtoll(number.c_str(), &endptr, 10);
-      token_type type = INT;
-      if (fits<int8_t>(val_))
-        type = BYTE;
-      else if (fits<int16_t>(val_))
-        type = WORD;
-      else if (fits<int32_t>(val_))
-        type = INT;
-      else
-        type = LONG;
-      lexed.push_back(create_token(type, static_cast<token_value>(val_)));
+      if (number.find(".") != std::string::npos) {
+        lexed.push_back(create_token(DOUBLE, strtod(number.c_str(), &endptr)));
+      } else {
+        auto val_ = strtoll(number.c_str(), &endptr, 10);
+        token_type type = INT;
+        if (fits<int8_t>(val_))
+          type = BYTE;
+        else if (fits<int16_t>(val_))
+          type = WORD;
+        else if (fits<int32_t>(val_))
+          type = INT;
+        else
+          type = LONG;
+        lexed.push_back(create_token(type, static_cast<token_value>(val_)));
+      }
       continue;
     }
     i++;
