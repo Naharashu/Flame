@@ -127,6 +127,10 @@ inline std::string op2string(token_type a) {
     op = " / ";
   if (a == MOD)
     op = " % ";
+  if (a == AND)
+    op = " && ";
+  if (a == OR)
+    op = " || ";
   return op;
 }
 

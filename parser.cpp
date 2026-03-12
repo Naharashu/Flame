@@ -107,8 +107,20 @@ astptr parser::parse_use() {
   consume(SEMI);
   std::ifstream file(name);
   std::ostringstream oss;
+  if(!file.is_open()) {
+    std::string home = std::getenv("HOME");
+    file.open((home + std::string{"/.local/bin/flame_/"}+name));
+    oss << file.rdbuf();
+    std::string code = oss.str();
+    file.close();
+    lexer l;
+    std::vector<token> toks = l.lex(code);
+    parser p(toks);
+    std::vector<astptr> module = p.parse();
+    return std::make_unique<ModuleNode>(std::move(module));
+  }
   if(!file) {
-    std::cerr << "Cannot open file " << name << std::endl;
+    std::cerr << "Cannot open file " << name << " or maybe it doesnt exits" << std::endl;
     file.close();
     exit(1);
   }

@@ -87,6 +87,12 @@ std::string FuncCallNode::gen(generator &g) {
     args_ += g.gencode(args.at(0));
     return args_;
   }
+
+  if (name == "sizeof") {
+    args_ = "sizeof(";   
+    args_ += g.gencode(args.at(0)) + ')';
+    return args_;
+  }
   for (u64 i = 0; i < args.size(); i++) {
     args_ += g.gencode(args[i]);
     if (i + 1 < args.size())
@@ -109,6 +115,10 @@ std::string CondNode::gen(generator &g) {
     op_ = " == ";
   if (op == NEQUAL)
     op_ = " != ";
+  if (op == OR)
+    op_ = " || ";
+  if (op == AND)
+    op_ = " && ";
   return '(' + g.gencode(left) + op_ + g.gencode(right) + ')';
 }
 

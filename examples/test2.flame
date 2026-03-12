@@ -2,5 +2,7 @@ use stdlib;
 
 func main() i32 {
     print(sqrt(abs(-25)));
+    i32 a = sizeof(3);
+    print(a);
     return 0;
 }

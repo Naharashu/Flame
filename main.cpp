@@ -83,6 +83,9 @@ int main(int argc, char *argv[]) {
   out.write(code_.c_str(), code_.size());
   out.close();
   if (compile_into_bin) {
+    std::string cleanup = "rm -f ";
+    cleanup += out_name;
+    system(cleanup.c_str());
     std::string output;
     if(slow_code) output = "g++ -O0 temp_flame.cpp -o " + out_name;
     else output = !fast_code ? "g++ temp_flame.cpp -o " + out_name : "g++ -O3 temp_flame.cpp -o " + out_name;

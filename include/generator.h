@@ -63,7 +63,6 @@ public:
         cpp_code << c;
       cpp_code << '\n';
     }
-    if(cpp_code.str()=="") throw TranspileTimeError("Code is empty, stopping...");
     return header + cpp_code.str();
   }
 };

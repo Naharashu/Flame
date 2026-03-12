@@ -1,3 +1,8 @@
+// Stdlib v1.0 by Naharashu (12.03.26)
+// MIT License
+/*
+abc
+*/
 func abs(i64 a) i64 {
     if(a > 0) {
         return a;
@@ -7,8 +12,21 @@ func abs(i64 a) i64 {
 
 func sqrt(f64 a) f64 {
     f64 x = 1.0;
-    for(i32 i=0;i<4;i++) {
+    for(i32 i=0;i<=6;i++) {
         x = 0.5*(x+(a/x));
     }
     return x;
+}
+
+func floor(f64 a) f64 {
+    i64 res = a;
+    if(a<0 && a!=res) {
+        return res-1;
+    }
+    return res;
+}
+
+func fmod(f64 a, f64 b) f64 {
+    f64 res = a-b*floor(a/b);
+    return res;
 }

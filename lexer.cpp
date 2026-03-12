@@ -44,6 +44,16 @@ std::vector<token> lexer::lex(std::string src) {
       break;
     }
     case '/': {
+      if(next == '/') {
+        while(i<src.size()&&src.at(i)!='\n') i++;
+        break;
+      }
+      if(next == '*') {
+        i+=2;
+        while(src.at(i)!='*'&&src.at(i+1)!='/') i++;
+        i++;
+        break;
+      }
       lexed.push_back(create_token(SLASH, nothing{}));
       break;
     }
@@ -288,68 +298,54 @@ std::vector<token> lexer::lex(std::string src) {
 
 std::string disassemble_tok_type(token_type type) {
   switch (type) {
-    case BYTE_TYPE: {
+    case BYTE_TYPE:
       return "i8";
-    }
-    case WORD_TYPE: {
+    case WORD_TYPE:
       return "i16";
-    }
-    case INT_TYPE: {
+    case INT_TYPE:
       return "i32";
-    }
-    case LONG_TYPE: {
+    case LONG_TYPE:
       return "i64";
-    }
-    case AUTO_TYPE: {
+    case AUTO_TYPE:
       return "auto";
-    }
-    case UNSIGNED_8_TYPE: {
+    case UNSIGNED_8_TYPE: 
       return "u8";
-    }
-    case UNSIGNED_16_TYPE: {
+    case UNSIGNED_16_TYPE:
       return "u16";
-    }
-    case UNSIGNED_32_TYPE: {
+    case UNSIGNED_32_TYPE:
       return "u32";
-    }
-    case UNSIGNED_64_TYPE: {
+    case UNSIGNED_64_TYPE:
       return "u64";
-    }
-    case FLOAT_TYPE: {
+    case FLOAT_TYPE:
       return "f32";
-    }
-    case DOUBLE_TYPE: {
+    case DOUBLE_TYPE:
       return "f64";
-    }
-    case BOOL_TYPE: {
+    case BOOL_TYPE:
       return "bool";
-    }
-    case STRING_TYPE: {
+    case STRING_TYPE:
       return "string";
-    }
-    case SEMI: {
+    case SEMI:
       return ";";
-    }
-    case ID: {
+    case COMA:
+      return ",";
+    case ID:
       return "ID";
-    }
-    case L_BRACKET: {
+    case L_BRACKET:
       return "(";
-    }
-    case R_BRACKET: {
+    case R_BRACKET:
       return ")";
-    }
-    case L_BRACES: {
+    case L_BRACES:
       return "{";
-    }
-    case R_BRACES: {
+    case R_BRACES:
       return "}";
-    }
     case BYTE:
     case WORD:
     case INT:
     case LONG:
       return "number";
+    case FLOAT:
+    case DOUBLE:
+      return "floating point number";
     case FUNC:
       return "func";
     case RETURN:
@@ -358,6 +354,14 @@ std::string disassemble_tok_type(token_type type) {
       return "while";
     case FOR:
       return "for";
+    case USE:
+      return "use";
+    case IF:
+      return "if";
+    case ELIF:
+      return "elif";
+    case ELSE:
+      return "else";
     case TRUE:
       return "true";
     case FALSE:
@@ -372,6 +376,22 @@ std::string disassemble_tok_type(token_type type) {
       return "/";
     case MOD:
       return "%";
+    case AND:
+      return "and";
+    case OR:
+      return "or";
+    case LESS:
+      return "<";
+    case BIGGER:
+      return ">";
+    case LEQUAL:
+      return "<=";
+    case BEQUAL:
+      return ">=";
+    case NEQUAL:
+      return "!=";
+    case EQUAL:
+      return "==";
     case EOF_:
       return "EOF";
     default:

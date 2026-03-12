@@ -1,4 +1,4 @@
-\CXX = g++
+CXX = g++
 CXX_FLAGS = -g -O1 -Wall -Wextra
 CXX_OBJ = build/lexer.o build/parser.o build/main.o build/ast.o
 HOME_ = $(HOME)
@@ -16,9 +16,12 @@ build/%.o: %.cpp
 
 install:
 	cp flame $(HOME_)/.local/bin/flame
+	mkdir -p $(HOME_)/.local/bin/flame_
+	cp examples/stdlib.flame $(HOME_)/.local/bin/flame_/stdlib.flame
 
 uninstall:
 	rm -f $(HOME_)/.local/bin/flame
+	rm -rf $(HOME_)/.local/bin/flame_/*
 
 clean:
 	rm -f flame
