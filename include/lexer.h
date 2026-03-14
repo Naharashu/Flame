@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 
-enum token_type {
+enum token_type : unsigned char {
     BYTE_TYPE,
     WORD_TYPE,
     INT_TYPE,
@@ -76,19 +76,21 @@ enum token_type {
 };
 
 using nothing = std::monostate;
-using token_value = std::variant<nothing, long long, double, bool, std::string>;
+using token_value = std::variant<nothing, long long, float, double, bool, std::string>;
 
 struct token {
     token_type type;
     token_value value;
-    token_type type_of_var;
+    unsigned long long line;
+    unsigned long long column;
 };
 
 class lexer {
 private:
-  token create_token(token_type a, token_value b, token_type c);
+  token create_token(const token_type &a,const token_value &b,const unsigned long long &line,const unsigned long long &c);
   bool is_int(char c);
   bool is_letter(char c);
+  unsigned long long l;
 
 public:
   std::vector<token> lex(std::string src);

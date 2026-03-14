@@ -19,6 +19,10 @@ template <typename T> inline long long variant2int(token_value &val) {
   return std::get<T>(val);
 }
 
+inline double variant2float(token_value &val) {
+  return std::get<float>(val);
+}
+
 inline double variant2double(token_value &val) {
   return std::get<double>(val);
 }
@@ -144,11 +148,11 @@ inline std::string variant2value(token tok) {
   if (tok.type == LONG)
     return std::to_string(variant2int<long long>(tok.value));
   if (tok.type == FLOAT)
-    return std::to_string((float)variant2double(tok.value));
+    return std::to_string(variant2float(tok.value));
   if (tok.type == DOUBLE)
     return std::to_string(variant2double(tok.value));
   if (tok.type == STRING)
-    return "R\"(" + variant2string(tok.value) + ")\"";
+    return '\"' + variant2string(tok.value) + '\"';
   if (tok.type == TRUE || tok.type == FALSE)
     return std::to_string(variant2bool(tok.value));
   if (tok.type == NULL_)
@@ -172,6 +176,16 @@ inline bool is_it_int(token_type a) {
     case WORD:
     case INT:
     case LONG:
+      return true;
+    default:
+      return false;
+  }
+}
+
+inline bool is_it_float(token_type a) {
+  switch (a) {
+    case FLOAT:
+    case DOUBLE:
       return true;
     default:
       return false;

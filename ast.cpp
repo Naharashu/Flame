@@ -15,17 +15,38 @@ std::string BinaryNode::gen(generator &g) {
   if(left->kind==ast_type::JUSTNODE) {
     auto n=static_cast<Node*>(left.get());
     auto n_=static_cast<Node*>(right.get());
-    if(n->tok.type == DOUBLE) float_ = true;
-    if(n_->tok.type == DOUBLE) float_ = true;
-    if(n->tok.type == STRING&&(is_it_int(n_->tok.type))) string_to_int_op = true;
-    if(n_->tok.type == STRING&&is_it_int(n->tok.type)) string_to_int_op = true;
+    if(is_it_float(n->tok.type)) {
+      float_ = true;
+      g.line = n->tok.line;
+      g.column = n->tok.column;
+    }
+    if(is_it_float(n_->tok.type)) {
+      float_ = true;
+      g.line = n->tok.line;
+      g.column = n->tok.column;
+    }
+    if(n->tok.type == STRING&&(is_it_int(n_->tok.type))) {
+      string_to_int_op = true;
+      g.line = n->tok.line;
+      g.column = n->tok.column;
+    }
+    if(n_->tok.type == STRING&&is_it_int(n->tok.type)) {
+      string_to_int_op = true;
+      g.line = n->tok.line;
+      g.column = n->tok.column;
+    }
   }
+  std::string res = "(" + g.gencode(left) + op2string(op) + g.gencode(right) + ")";
   if(float_ && op==MOD) {
-    throw TranspileTimeError("Cannot do modulo for floats, use fmod from stdlib instead\n");
+    std::string err = "Cannot do modulo for floats, use fmod from stdlib instead:\n\t";
+    err += res + '\n';
+    throw TranspileTimeError(err.c_str());
   } else if(string_to_int_op) {
-    throw TranspileTimeError("Cannot add string to a integer\n");
+    std::string err = "Cannot do math with string and integer:\n\t";
+    err += res + '\n';
+    throw TranspileTimeError(err.c_str());
   }
-  return "(" + g.gencode(left) + op2string(op) + g.gencode(right) + ")";
+  return res;
 }
 
 std::string AssignmentNode::gen(generator &g) {
@@ -268,7 +289,8 @@ std::string ArrayNode::gen(generator &g) {
 }
 
 std::string ArrayAccessNode::gen(generator &g) {
-    return variant2string(id.value) + "[" + g.gencode(index) + "]";
+  u64 val = std::stoll(g.gencode(index));
+  return variant2string(id.value) + "[" + g.gencode(index) + "]";
 }
 
 std::string ArrayChangeNode::gen(generator &g) {

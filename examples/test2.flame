@@ -4,6 +4,6 @@ func main() i32 {
     print(sqrt(abs(-25)));
     bool z = true;
     i32 a = sizeof(z);
-    print(pow(3.14,2));
+    print("abc"+2);
     return 0;
 }

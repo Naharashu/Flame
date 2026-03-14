@@ -5,9 +5,8 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
-#define u64 long long
 
-token lexer::create_token(token_type a, token_value b, token_type c=EOF_) { return token{a, b, c}; }
+token lexer::create_token(const token_type &a,const token_value &b,const u64 &line,const u64 &column) { return token{a, b, line, column}; }
 
 bool lexer::is_int(char c) { return c >= '0' && c <= '9'; }
 
@@ -18,29 +17,33 @@ bool lexer::is_letter(char c) {
 std::vector<token> lexer::lex(std::string src) {
   std::vector<token> lexed;
   size_t i = 0;
+  l = 1;
+  u64 col = 1;
   while (i < src.size()) {
     char c = src[i];
+    col++;
     char next = (i + 1 < src.size()) ? src[i + 1] : '\0';
     if (c == ' ' || c == '\t' || c == '\r') {
       i++;
       continue;
     }
     if(c == '\n') {
-      lexed.push_back(create_token(NEWLINE, nothing{}));
+      l++;
+      col=0;
       i++;
       continue;
     }
     switch (c) {
     case '+': {
-      lexed.push_back(create_token(PLUS, nothing{}));
+      lexed.push_back(create_token(PLUS, nothing{}, l, col));
       break;
     }
     case '-': {
-      lexed.push_back(create_token(MINUS, nothing{}));
+      lexed.push_back(create_token(MINUS, nothing{}, l, col));
       break;
     }
     case '*': {
-      lexed.push_back(create_token(STAR, nothing{}));
+      lexed.push_back(create_token(STAR, nothing{}, l, col));
       break;
     }
     case '/': {
@@ -54,113 +57,113 @@ std::vector<token> lexer::lex(std::string src) {
         i++;
         break;
       }
-      lexed.push_back(create_token(SLASH, nothing{}));
+      lexed.push_back(create_token(SLASH, nothing{}, l, col));
       break;
     }
     case '%': {
-      lexed.push_back(create_token(MOD, nothing{}));
+      lexed.push_back(create_token(MOD, nothing{}, l, col));
       break;
     }
     case '(': {
-      lexed.push_back(create_token(L_BRACKET, nothing{}));
+      lexed.push_back(create_token(L_BRACKET, nothing{}, l, col));
       break;
     }
     case ')': {
-      lexed.push_back(create_token(R_BRACKET, nothing{}));
+      lexed.push_back(create_token(R_BRACKET, nothing{}, l, col));
       break;
     }
     case '[': {
-      lexed.push_back(create_token(L_SQ_BRACKET, nothing{}));
+      lexed.push_back(create_token(L_SQ_BRACKET, nothing{}, l, col));
       break;
     }
     case ']': {
-      lexed.push_back(create_token(R_SQ_BRACKET, nothing{}));
+      lexed.push_back(create_token(R_SQ_BRACKET, nothing{}, l, col));
       break;
     }
     case '{': {
-      lexed.push_back(create_token(L_BRACES, nothing{}));
+      lexed.push_back(create_token(L_BRACES, nothing{}, l, col));
       break;
     }
     case '}': {
-      lexed.push_back(create_token(R_BRACES, nothing{}));
+      lexed.push_back(create_token(R_BRACES, nothing{}, l, col));
       break;
     }
     case '=': {
       if (next == '=') {
-        lexed.push_back(create_token(EQUAL, nothing{}));
+        lexed.push_back(create_token(EQUAL, nothing{}, l, col));
         i++;
         break;
       }
-      lexed.push_back(create_token(EQ, nothing{}));
+      lexed.push_back(create_token(EQ, nothing{}, l, col));
       break;
     }
     case '>': {
       if (next == '=') {
-        lexed.push_back(create_token(BEQUAL, nothing{}));
+        lexed.push_back(create_token(BEQUAL, nothing{}, l, col));
         i++;
         break;
       } else if (next == '>') {
-        lexed.push_back(create_token(SHIFT_R, nothing{}));
+        lexed.push_back(create_token(SHIFT_R, nothing{}, l, col));
         i++;
         break;
       }
-      lexed.push_back(create_token(BIGGER, nothing{}));
+      lexed.push_back(create_token(BIGGER, nothing{}, l, col));
       break;
     }
     case '<': {
       if (next == '=') {
-        lexed.push_back(create_token(LEQUAL, nothing{}));
+        lexed.push_back(create_token(LEQUAL, nothing{}, l, col));
         i++;
         break;
       } else if (next == '<') {
-        lexed.push_back(create_token(SHIFT_L, nothing{}));
+        lexed.push_back(create_token(SHIFT_L, nothing{}, l, col));
         i++;
         break;
       }
-      lexed.push_back(create_token(LESS, nothing{}));
+      lexed.push_back(create_token(LESS, nothing{}, l, col));
       break;
     }
     case '!': {
       if (next == '=') {
-        lexed.push_back(create_token(NEQUAL, nothing{}));
+        lexed.push_back(create_token(NEQUAL, nothing{}, l, col));
         i++;
         break;
       }
-      lexed.push_back(create_token(NOT, nothing{}));
+      lexed.push_back(create_token(NOT, nothing{}, l, col));
       break;
     }
     case '&': {
       if (next == '&') {
-        lexed.push_back(create_token(AND, nothing{}));
+        lexed.push_back(create_token(AND, nothing{}, l, col));
         i++;
         break;
       }
-      lexed.push_back(create_token(AND_B, nothing{}));
+      lexed.push_back(create_token(AND_B, nothing{}, l, col));
       break;
     }
     case '|': {
       if (next == '|') {
-        lexed.push_back(create_token(OR, nothing{}));
+        lexed.push_back(create_token(OR, nothing{}, l, col));
         i++;
         break;
       }
-      lexed.push_back(create_token(OR_B, nothing{}));
+      lexed.push_back(create_token(OR_B, nothing{}, l, col));
       break;
     }
     case ';': {
-      lexed.push_back(create_token(SEMI, nothing{}));
+      lexed.push_back(create_token(SEMI, nothing{}, l, col));
       break;
     }
     case ',': {
-      lexed.push_back(create_token(COMA, nothing{}));
+      lexed.push_back(create_token(COMA, nothing{}, l, col));
       break;
     }
     case '.': {
-      lexed.push_back(create_token(DOT, nothing{}));
+      lexed.push_back(create_token(DOT, nothing{}, l, col));
       break;
     }
     case ':': {
-      lexed.push_back(create_token(TWODOTS, nothing{}));
+      lexed.push_back(create_token(TWODOTS, nothing{}, l, col));
       break;
     }
     }
@@ -172,61 +175,61 @@ std::vector<token> lexer::lex(std::string src) {
         i++;
       }
       if (id == "if")
-        lexed.push_back(create_token(IF, nothing{}));
+        lexed.push_back(create_token(IF, nothing{}, l, col));
       else if (id == "else")
-        lexed.push_back(create_token(ELSE, nothing{}));
+        lexed.push_back(create_token(ELSE, nothing{}, l, col));
       else if (id == "elif")
-        lexed.push_back(create_token(ELIF, nothing{}));
+        lexed.push_back(create_token(ELIF, nothing{}, l, col));
       else if (id == "while")
-        lexed.push_back(create_token(WHILE, nothing{}));
+        lexed.push_back(create_token(WHILE, nothing{}, l, col));
       else if (id == "break")
-        lexed.push_back(create_token(BREAK, nothing{}));
+        lexed.push_back(create_token(BREAK, nothing{}, l, col));
       else if (id == "continue")
-        lexed.push_back(create_token(CONTINUE, nothing{}));
+        lexed.push_back(create_token(CONTINUE, nothing{}, l, col));
       else if (id == "for")
-        lexed.push_back(create_token(FOR, nothing{}));
+        lexed.push_back(create_token(FOR, nothing{}, l, col));
       else if (id == "func")
-        lexed.push_back(create_token(FUNC, nothing{}));
+        lexed.push_back(create_token(FUNC, nothing{}, l, col));
       else if (id == "true")
-        lexed.push_back(create_token(TRUE, true));
+        lexed.push_back(create_token(TRUE, true, l, col));
       else if (id == "false")
-        lexed.push_back(create_token(FALSE, false));
+        lexed.push_back(create_token(FALSE, false, l, col));
       else if (id == "i8")
-        lexed.push_back(create_token(BYTE_TYPE, nothing{}, BYTE_TYPE));
+        lexed.push_back(create_token(BYTE_TYPE, nothing{}, l, col));
       else if (id == "u8")
-        lexed.push_back(create_token(UNSIGNED_8_TYPE, nothing{}, UNSIGNED_8_TYPE));
+        lexed.push_back(create_token(UNSIGNED_8_TYPE, nothing{}, l, col));
       else if (id == "i16")
-        lexed.push_back(create_token(WORD_TYPE, nothing{}, WORD_TYPE));
+        lexed.push_back(create_token(WORD_TYPE, nothing{}, l, col));
       else if (id == "u16")
-        lexed.push_back(create_token(UNSIGNED_16_TYPE, nothing{}, UNSIGNED_16_TYPE));
+        lexed.push_back(create_token(UNSIGNED_16_TYPE, nothing{}, l, col));
       else if (id == "i32")
-        lexed.push_back(create_token(INT_TYPE, nothing{}, INT_TYPE));
+        lexed.push_back(create_token(INT_TYPE, nothing{}, l, col));
       else if (id == "u32")
-        lexed.push_back(create_token(UNSIGNED_32_TYPE, nothing{}, UNSIGNED_32_TYPE));
+        lexed.push_back(create_token(UNSIGNED_32_TYPE, nothing{}, l, col));
       else if (id == "i64")
-        lexed.push_back(create_token(LONG_TYPE, nothing{}, LONG_TYPE));
+        lexed.push_back(create_token(LONG_TYPE, nothing{}, l, col));
       else if (id == "u64")
-        lexed.push_back(create_token(UNSIGNED_64_TYPE, nothing{}, UNSIGNED_64_TYPE));
+        lexed.push_back(create_token(UNSIGNED_64_TYPE, nothing{}, l, col));
       else if (id == "f32")
-        lexed.push_back(create_token(FLOAT_TYPE, nothing{}, FLOAT_TYPE));
+        lexed.push_back(create_token(FLOAT_TYPE, nothing{}, l, col));
       else if (id == "f64")
-        lexed.push_back(create_token(DOUBLE_TYPE, nothing{}, DOUBLE_TYPE));
+        lexed.push_back(create_token(DOUBLE_TYPE, nothing{}, l, col));
       else if (id == "string")
-        lexed.push_back(create_token(STRING_TYPE, nothing{}, STRING_TYPE));
+        lexed.push_back(create_token(STRING_TYPE, nothing{}, l, col));
       else if (id == "bool")
-        lexed.push_back(create_token(BOOL_TYPE, nothing{}, BOOL_TYPE));
+        lexed.push_back(create_token(BOOL_TYPE, nothing{}, l, col));
       else if (id == "null")
-        lexed.push_back(create_token(NULL_, std::string{"NULL"}));
+        lexed.push_back(create_token(NULL_, std::string{"NULL"}, l, col));
       else if (id == "void")
-        lexed.push_back(create_token(VOID_TYPE, nothing{}));
+        lexed.push_back(create_token(VOID_TYPE, nothing{}, l, col));
       else if (id == "auto")
-        lexed.push_back(create_token(AUTO_TYPE, nothing{}));
+        lexed.push_back(create_token(AUTO_TYPE, nothing{}, l, col));
       else if (id == "use")
-        lexed.push_back(create_token(USE, nothing{}));
+        lexed.push_back(create_token(USE, nothing{}, l, col));
       else if (id == "return")
-        lexed.push_back(create_token(RETURN, nothing{}));
+        lexed.push_back(create_token(RETURN, nothing{}, l, col));
       else
-        lexed.push_back(create_token(ID, id));
+        lexed.push_back(create_token(ID, id, l,col));
 
       continue;
     }
@@ -263,7 +266,7 @@ std::vector<token> lexer::lex(std::string src) {
         exit(1);
       }
       i++;
-      lexed.push_back(create_token(STRING, str));
+      lexed.push_back(create_token(STRING, str, l, col));
       continue;
     }
     if (is_int(c)) {
@@ -273,7 +276,9 @@ std::vector<token> lexer::lex(std::string src) {
       }
       char *endptr;
       if (number.find(".") != std::string::npos) {
-        lexed.push_back(create_token(DOUBLE, strtod(number.c_str(), &endptr)));
+        auto val_ = strtod(number.c_str(), &endptr);
+        if(fits<float>(val_)) lexed.push_back(create_token(FLOAT, (float)val_ ,l, col));
+        else lexed.push_back(create_token(DOUBLE, val_ ,l, col));
       } else {
         auto val_ = strtoll(number.c_str(), &endptr, 10);
         token_type type = INT;
@@ -281,17 +286,15 @@ std::vector<token> lexer::lex(std::string src) {
           type = BYTE;
         else if (fits<int16_t>(val_))
           type = WORD;
-        else if (fits<int32_t>(val_))
-          type = INT;
         else
           type = LONG;
-        lexed.push_back(create_token(type, static_cast<token_value>(val_)));
+        lexed.push_back(create_token(type, static_cast<token_value>(val_),l, col));
       }
       continue;
     }
     i++;
   }
-  lexed.push_back(create_token(EOF_, nothing{}));
+  lexed.push_back(create_token(EOF_, nothing{}, l, col));
   return lexed;
 }
 

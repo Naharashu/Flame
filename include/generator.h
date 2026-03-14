@@ -27,6 +27,8 @@ class TranspileTimeError : public std::exception {
 class generator {
 public:
   int indent = 0;
+  u64 line=1;
+  u64 column=0;
 
   std::string pad() { return std::string(indent * 4, ' '); }
 
@@ -44,14 +46,7 @@ public:
       header += "#include <cstdint>\n";
     }
     for (auto &x : nodes) {
-      std::string c;
-      try {
-        c = gencode(x);
-      } catch (const TranspileTimeError& e) {
-        std::cout << e.what();
-        nodes.clear();
-        throw e;
-      }
+      std::string c = gencode(x);
       if (c.empty())
         continue;
 

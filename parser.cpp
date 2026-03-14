@@ -2,6 +2,7 @@
 #include "include/ast.h"
 #include "include/common.h"
 #include "include/lexer.h"
+#include "include/table.h"
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -21,6 +22,7 @@ astptr parser::parse_factor() {
        return std::make_unique<Node>(tok);
       } 
   else if (tok.type == token_type::ID) {
+    table[table.size()-1].emplace("", std::make_pair(variant2string(tok.value), nothing{}));
     if (peek().type == L_BRACKET) {
       consume();
       std::vector<astptr> args_;
@@ -51,9 +53,9 @@ astptr parser::parse_factor() {
     return node;
 
   } else {
-    std::cerr << "Error in parsing factor -> " + disassemble_tok_type(tok.type) +
-                     " at line " + std::to_string(line) + '\n';
-    exit(EXIT_FAILURE);
+    parser::line = tok.line;
+    parser::column = tok.column;
+    throw ParseTimeError("unexpected token '" + disassemble_tok_type(tok.type) + "'\n");
   }
 }
 
@@ -188,13 +190,20 @@ astptr parser::parse_return() {
   return std::make_unique<ReturnNode>(std::move(node));
 }
 
-astptr parser::parse_block() {
+astptr parser::parse_block(std::string func = "") {
+  table.emplace_back();
   consume(L_BRACES);
   std::vector<astptr> stmts;
+  bool seen_return = false;
   while (peek().type != R_BRACES && indx < src.size()) {
+    if(peek().type == RETURN) seen_return = true;
     stmts.push_back(parse_statement());
   }
+  if(!seen_return&&func!="") {
+    std::cerr << "\x1b[0;33mWarning: function " << func << " doesnt have returning, it may lead to errors \x1b[0m\n";
+  }
   consume(R_BRACES);
+  table.emplace_back();
   return std::make_unique<BlockNode>(std::move(stmts));
 }
 
@@ -212,10 +221,11 @@ astptr parser::parse_func_statement() {
   consume(R_BRACKET);
   token return_type = consume();
   if (!is_it_type(return_type) && return_type.type != VOID_TYPE) {
-    std::cerr << "Unknown return type in " + variant2string(id.value) << '\n';
-    exit(EXIT_FAILURE);
+    parser::line = return_type.line;
+    parser::column = return_type.column;
+    throw ParseTimeError("Unknown return type in " + variant2string(id.value) + ", expected i8..64, u8..64, bool, string, void, auto\n");
   }
-  astptr block = parse_block();
+  astptr block = parse_block(variant2string(id.value));
   return std::make_unique<FuncNode>(id, return_type, std::move(args_),
                                     std::move(block));
 }
@@ -223,9 +233,11 @@ astptr parser::parse_func_statement() {
 astptr parser::parse_if_statement() {
   consume(IF);
   consume(L_BRACKET);
-  if(peek().type==R_BRACKET) {
-    std::cerr << "Error in parsing if: expected condition at line " << line << '\n';
-    exit(1);
+  token next = peek();
+  if(next.type==R_BRACKET) {
+    parser::line = next.line;
+    parser::column = next.column;
+    throw ParseTimeError("expected condition in if, like if(a<10)\n");
   }
   astptr cond = parse_or();
   consume(R_BRACKET);
@@ -285,17 +297,18 @@ astptr parser::parse_break_continue() {
     consume(SEMI);
     return std::make_unique<ContinueNode>();
   } else {
-    std::cerr
-        << "Error in parsing break or continue, expected break or continue\n";
-    exit(EXIT_FAILURE);
+    parser::line = a.line;
+    parser::column = a.column;
+    throw ParseTimeError("Error in parsing break or continue, expected break or continue\n");
   }
 }
 
 astptr parser::parse_array() {
   if(peek().type == ID && peek(1).type == L_SQ_BRACKET) return parse_factor();
   if (!is_it_type(peek()) || !(peek(1).type == L_SQ_BRACKET)) {
-    std::cerr << "Error in parsing array, expected syntax like this: Type[]";
-    exit(1);
+    parser::line = peek().line;
+    parser::column = peek().column;
+    throw ParseTimeError("Error in parsing array, expected syntax like this: Type[]\n");
   }
   token type = consume();
   consume(L_SQ_BRACKET);
@@ -369,8 +382,9 @@ astptr parser::parse_assignment() {
     return std::make_unique<AssignmentNode>(type, std::move(value));
   }
   if (!is_it_type(type)) {
-    std::cerr << "Error: unexpected type " + std::to_string(type.type) + '\n';
-    exit(1);
+    parser::line = type.line;
+    parser::column = type.column;
+    throw ParseTimeError("Error: unexpected type " + std::to_string(type.type) + '\n');
   }
   token id = consume(token_type::ID);
   if (peek().type == SEMI) {
@@ -384,10 +398,6 @@ astptr parser::parse_assignment() {
 }
 
 astptr parser::parse_statement() {
-  while(src.at(indx).type == NEWLINE) {
-            indx++;
-            line++;
-  }
   token tok = peek();
   switch (tok.type) {
   case token_type::IF:

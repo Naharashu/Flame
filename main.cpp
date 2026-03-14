@@ -51,7 +51,8 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   std::string line;
-  std::ifstream file(argv[1]);
+  const char* filename = argv[1];
+  std::ifstream file(filename);
   while (std::getline(file, line)) {
     code += line + '\n';
   }
@@ -67,17 +68,23 @@ int main(int argc, char *argv[]) {
   }
   std::vector<astptr> res;
   res.reserve(toks.size());
-  res = parser_.parse();
+  try {
+    res = parser_.parse();
+  } catch (ParseTimeError& e) {
+    std::cout << "\x1b[0;35m" << filename << ':' << parser_.line << ':' << parser_.column << ": \x1b[31m error\n" <<  e.what() << "\x1b[0m";
+    return 1;
+  }
   generator gen;
   std::string code_;
   try {
     code_ = gen.generate(res);
   } catch (TranspileTimeError& e) {
+    std::cout << "\x1b[0;35m" << filename << ':' << gen.line << ':' << gen.column << ": \x1b[31m error\n" <<  e.what() << "\x1b[0m";
     return 1;
   }
   std::ofstream out("temp_flame.cpp", std::ios::out | std::ios::binary);
   if (!out.is_open()) {
-    std::cerr << "Cannot open temp file to generate cpp code\n";
+    std::cerr << "E: Cannot open temp file to generate cpp code\n";
     return 1;
   }
   out.write(code_.c_str(), code_.size());

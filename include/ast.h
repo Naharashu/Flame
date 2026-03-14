@@ -39,6 +39,8 @@ class ASTNode {
 public:
   ast_type kind;
   virtual ~ASTNode() = default;
+  u64 line=0;
+  u64 column=0;
   virtual std::string gen(generator &g) {
     (void)g;
 	  return "";
@@ -49,7 +51,7 @@ public:
 class Node : public ASTNode {
 public:
   token tok;
-  Node(const token t) : tok(t) { kind = ast_type::JUSTNODE; };
+  Node(const token t) : tok(t) { kind = ast_type::JUSTNODE; line=tok.line; column=tok.column;};
   std::string gen(generator &g) override;
 };
 
