@@ -4,6 +4,7 @@
 #include "common.h"
 #include "lexer.h"
 #include "parser.h"
+#include <cstddef>
 #include <cstdlib>
 #include <exception>
 #include <fstream>
@@ -17,7 +18,7 @@ class TranspileTimeError : public std::exception {
   private:
   std::string message;
   public:
-  TranspileTimeError(const char* msg) : message(msg) {}
+  explicit TranspileTimeError(const char* msg) : message(msg) {}
 
   const char * what() const noexcept override {
     return message.c_str();
@@ -30,7 +31,7 @@ public:
   u64 line=1;
   u64 column=0;
 
-  std::string pad() { return std::string(indent * 4, ' '); }
+  std::string pad() { return std::string(static_cast<int>(indent * 4), ' '); }
 
   std::ostringstream cpp_code;
   std::string header;

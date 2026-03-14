@@ -49,11 +49,19 @@ std::vector<token> lexer::lex(std::string src) {
     case '/': {
       if(next == '/') {
         while(i<src.size()&&src.at(i)!='\n') i++;
+        l++;
+        col=0;
         break;
       }
       if(next == '*') {
         i+=2;
-        while(src.at(i)!='*'&&src.at(i+1)!='/') i++;
+        while(src.at(i)!='*'&&src.at(i+1)!='/') {
+          if(src[i]=='\n') {
+            l++;
+            col=0;
+          }
+          i++;
+        }
         i++;
         break;
       }
@@ -166,6 +174,8 @@ std::vector<token> lexer::lex(std::string src) {
       lexed.push_back(create_token(TWODOTS, nothing{}, l, col));
       break;
     }
+    default:
+      break;
     }
     if (is_letter(c)) {
       std::string id;
@@ -275,7 +285,7 @@ std::vector<token> lexer::lex(std::string src) {
         number += src[i++];
       }
       char *endptr;
-      if (number.find(".") != std::string::npos) {
+      if (number.find('.') != std::string::npos) {
         auto val_ = strtod(number.c_str(), &endptr);
         if(fits<float>(val_)) lexed.push_back(create_token(FLOAT, (float)val_ ,l, col));
         else lexed.push_back(create_token(DOUBLE, val_ ,l, col));

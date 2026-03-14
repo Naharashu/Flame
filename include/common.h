@@ -29,7 +29,7 @@ inline double variant2double(token_value &val) {
 
 inline bool variant2bool(token_value &val) { return std::get<bool>(val); }
 
-template <typename T> bool fits(long long v) {
+template <typename T> bool fits(auto v) {
   return v >= std::numeric_limits<T>::min() &&
          v <= std::numeric_limits<T>::max();
 }

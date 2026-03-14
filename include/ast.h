@@ -8,7 +8,7 @@
 class ASTNode;
 class generator;
 
-typedef enum class ast_type {
+using ast_type = enum class ast_type {
   JUSTNODE,
   BINARY,
   DEFINEVAR,
@@ -31,7 +31,7 @@ typedef enum class ast_type {
   ARRAY,
   ARRAY_ACCESS,
   ARRAY_CHANGE,
-} ast_type;
+};
 
 using astptr = std::unique_ptr<ASTNode>;
 
@@ -51,14 +51,14 @@ public:
 class Node : public ASTNode {
 public:
   token tok;
-  Node(const token t) : tok(t) { kind = ast_type::JUSTNODE; line=tok.line; column=tok.column;};
+  explicit Node(const token& t) : tok(t) { kind = ast_type::JUSTNODE; line=tok.line; column=tok.column;};
   std::string gen(generator &g) override;
 };
 
 class ReturnNode : public ASTNode {
 public:
   astptr value;
-  ReturnNode(astptr node) : value(std::move(node)) { kind = ast_type::RETURN; };
+  explicit ReturnNode(astptr node) : value(std::move(node)) { kind = ast_type::RETURN; };
   void print() const override {}
   std::string gen(generator &g) override;
 };

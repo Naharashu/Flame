@@ -1,9 +1,12 @@
-use stdlib;
+/*use stdlib;
+
+*/
+
+func add(i32 a, i32 b) i32 {
+    return a+b;
+}
 
 func main() i32 {
-    print(sqrt(abs(-25)));
-    bool z = true;
-    i32 a = sizeof(z);
-    print("abc"+2);
+    print(a());
     return 0;
 }

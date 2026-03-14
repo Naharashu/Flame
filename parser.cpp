@@ -22,11 +22,14 @@ astptr parser::parse_factor() {
        return std::make_unique<Node>(tok);
       } 
   else if (tok.type == token_type::ID) {
-    table[table.size()-1].emplace("", std::make_pair(variant2string(tok.value), nothing{}));
     if (peek().type == L_BRACKET) {
+      if(!exist(variant2string(tok.value))) {
+        parser::line = tok.line;
+        parser::column = tok.column;
+        throw ParseTimeError("Use undeclared function '" + variant2string(tok.value) +"'\n");
+      }
       consume();
       std::vector<astptr> args_;
-
       while (peek().type != R_BRACKET) {
         args_.push_back(parse_or());
         if (peek().type == COMA)
@@ -36,6 +39,11 @@ astptr parser::parse_factor() {
       return std::make_unique<FuncCallNode>(tok, std::move(args_));
     }
     if(peek().type==L_SQ_BRACKET) {
+      if(!exist(variant2string(tok.value))) {
+        parser::line = tok.line;
+        parser::column = tok.column;
+        throw ParseTimeError("Use undeclared array '" + variant2string(tok.value) +"'\n");
+      }
     	consume();
     	astptr i=parse_expr();
     	consume(R_SQ_BRACKET);
@@ -44,8 +52,14 @@ astptr parser::parse_factor() {
       astptr value = parse_expr();
       return std::make_unique<ArrayChangeNode>(tok, std::move(i), std::move(value));
     }
+    if(!exist(variant2string(tok.value))) {
+      parser::line = tok.line;
+      parser::column = tok.column;
+      throw ParseTimeError("Use undeclared variable '" + variant2string(tok.value) +"'\n");
+    }
     return std::make_unique<Node>(tok);
   } else if (tok.type == token_type::L_BRACKET) {
+    
     astptr node = parse_expr();
 
     token close = consume(token_type::R_BRACKET);
@@ -122,7 +136,7 @@ astptr parser::parse_use() {
     return std::make_unique<ModuleNode>(std::move(module));
   }
   if(!file) {
-    std::cerr << "Cannot open file " << name << " or maybe it doesnt exits" << std::endl;
+    std::cerr << "Cannot open file " << name << " or maybe it doesnt exits\n";
     file.close();
     exit(1);
   }
@@ -190,7 +204,7 @@ astptr parser::parse_return() {
   return std::make_unique<ReturnNode>(std::move(node));
 }
 
-astptr parser::parse_block(std::string func = "") {
+astptr parser::parse_block(const std::string &func = "") {
   table.emplace_back();
   consume(L_BRACES);
   std::vector<astptr> stmts;
@@ -203,7 +217,7 @@ astptr parser::parse_block(std::string func = "") {
     std::cerr << "\x1b[0;33mWarning: function " << func << " doesnt have returning, it may lead to errors \x1b[0m\n";
   }
   consume(R_BRACES);
-  table.emplace_back();
+  table.pop_back();
   return std::make_unique<BlockNode>(std::move(stmts));
 }
 
@@ -212,8 +226,12 @@ astptr parser::parse_func_statement() {
   token id = consume(ID);
   consume(L_BRACKET);
   std::vector<astptr> args_;
+  table.emplace_back();
   while (peek().type != R_BRACKET) {
-    astptr argument = std::make_unique<ArgumentNode>(consume(), consume(ID));
+    token type = consume();
+    token arg_id = consume(ID);
+    insert(variant2string(arg_id.value), type.type, nothing{});
+    astptr argument = std::make_unique<ArgumentNode>(type, arg_id);
     args_.push_back(std::move(argument));
     if (peek().type == COMA)
       consume();
@@ -225,7 +243,9 @@ astptr parser::parse_func_statement() {
     parser::column = return_type.column;
     throw ParseTimeError("Unknown return type in " + variant2string(id.value) + ", expected i8..64, u8..64, bool, string, void, auto\n");
   }
+  insert(variant2string(id.value), FUNC, nothing{});
   astptr block = parse_block(variant2string(id.value));
+  table.pop_back();
   return std::make_unique<FuncNode>(id, return_type, std::move(args_),
                                     std::move(block));
 }
@@ -355,13 +375,18 @@ astptr parser::parse_assignment() {
               peek(2).type == PLUS) ||
              (peek().type == ID && peek(1).type == MINUS &&
               peek(2).type == MINUS)) {
-    token_value id = consume(ID).value;
+    token id = consume(ID);
     token a = consume();
     consume();
+    if(!exist(variant2string(id.value))) {
+      parser::line = id.line;
+      parser::column = id.column;
+      throw ParseTimeError("Use undeclared variable '" + variant2string(id.value) +"'\n");
+    }
     if (a.type == PLUS)
-      return std::make_unique<IncDecVarNode>(0, id);
+      return std::make_unique<IncDecVarNode>(0, id.value);
     else
-      return std::make_unique<IncDecVarNode>(1, id);
+      return std::make_unique<IncDecVarNode>(1, id.value);
   }
   if (is_it_type(peek()) && peek(1).type == L_SQ_BRACKET)
       return parse_array();
@@ -370,11 +395,21 @@ astptr parser::parse_assignment() {
     if (peek().type == PLUS || peek().type == MINUS || peek().type == STAR ||
         peek().type == SLASH || peek().type == MOD ) {
       token_type op = consume().type;
+      if(!exist(variant2string(type.value))) {
+        parser::line = type.line;
+        parser::column = type.column;
+        throw ParseTimeError("Use undeclared variable '" + variant2string(type.value) +"'\n");
+      }
       consume(EQ);
       astptr value = parse_or();
       if (peek().type == SEMI)
         consume(SEMI);
       return std::make_unique<ReAssignmentNodeExpr>(op, type, std::move(value));
+    }
+    if(!exist(variant2string(type.value))) {
+      parser::line = type.line;
+      parser::column = type.column;
+      throw ParseTimeError("Use undeclared variable '" + variant2string(type.value) +"'\n");
     }
     consume(EQ);
     astptr value = parse_or();
@@ -387,12 +422,23 @@ astptr parser::parse_assignment() {
     throw ParseTimeError("Error: unexpected type " + std::to_string(type.type) + '\n');
   }
   token id = consume(token_type::ID);
+  std::string id_value = variant2string(id.value);
+  if(exist_in_scope(id_value, table.size()-1) && !exist_in_scope(id_value,0)) {
+    parser::line = id.line;
+    parser::column = id.column;
+    throw ParseTimeError("Redefinition of '" + variant2string(id.value) +"'\n");
+  } else if(search_type(id_value)==FUNC) {
+    parser::line = id.line;
+    parser::column = id.column;
+    throw ParseTimeError("Redefinition function '" + variant2string(id.value) +"' as variable\n");
+  }
   if (peek().type == SEMI) {
     consume();
     return std::make_unique<AssignmentNodeExpr>(type.type, id, astptr{});
   }
   consume(token_type::EQ);
   astptr value = parse_or();
+  insert(variant2string(id.value), type.type, nothing{});
   consume(SEMI);
   return std::make_unique<AssignmentNodeExpr>(type.type, id, std::move(value));
 }
@@ -441,9 +487,14 @@ astptr parser::parse_statement() {
 }
 
 std::vector<std::unique_ptr<ASTNode>> parser::parse() {
+  table.emplace_back();
+  insert("print", FUNC, nothing{});
+  insert("input", FUNC, nothing{});
+  insert("sizeof", FUNC, nothing{});
   std::vector<std::unique_ptr<ASTNode>> parsed;
   while (peek().type != token_type::EOF_) {
     parsed.push_back(parse_statement());
   }
+  table.pop_back();
   return parsed;
 }

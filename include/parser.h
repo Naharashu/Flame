@@ -16,7 +16,7 @@ class ParseTimeError : public std::exception {
   private:
   std::string message;
   public:
-  ParseTimeError(std::string msg) : message(msg) {}
+  explicit ParseTimeError(const std::string &msg) : message(msg) {}
 
   const char * what() const noexcept override {
     return message.c_str();
@@ -29,7 +29,8 @@ class parser {
     u64 indx;
     u64 line=0;
     u64 column=0;
-    parser(const std::vector<token> &a) {
+    bool factor_decl_mode = false;
+    explicit parser(const std::vector<token> &a) {
         src = a;
         indx = 0;
     }
@@ -43,7 +44,7 @@ class parser {
     astptr parse_while_statement();
     astptr parse_for_statement();
     astptr parse_return();
-    astptr parse_block(std::string func);
+    astptr parse_block(const std::string &func);
     astptr parse_func_statement();
     astptr parse_use();
     astptr parse_comparison();
