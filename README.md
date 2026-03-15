@@ -4,9 +4,9 @@ Flame is programming language
 
 
 #### Changelog
-0.4:
-  > added modules,
+0.6.0:
+  > added const keyword, 
 
-  > added mod(%),
+  > added xor(^),
 
-  > fixed arrays and added change value of array
+  > added very good error and warning handling, fixed bugs
