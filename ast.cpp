@@ -311,6 +311,11 @@ std::string ReAssignmentNodeExpr::gen(generator &g)
         op = " %= ";
         break;
     }
+    case XOR:
+    {
+        op = " ^= ";
+        break;
+    }
     default:
         break;
     }

@@ -33,5 +33,5 @@ func pow(f64 a, i32 b) f64 {
     for(i32 i=1;i<b;i++) {
         res *= a;
     }
-    return res
+    return res;
 }

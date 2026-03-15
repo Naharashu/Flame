@@ -135,6 +135,8 @@ inline std::string op2string(token_type a) {
     op = " && ";
   if (a == OR)
     op = " || ";
+  if (a == XOR)
+    op = " ^ ";
   return op;
 }
 

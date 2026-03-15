@@ -158,6 +158,10 @@ std::vector<token> lexer::lex(std::string src) {
       lexed.push_back(create_token(OR_B, nothing{}, l, col));
       break;
     }
+    case '^': {
+      lexed.push_back(create_token(XOR, nothing{}, l, col));
+      break;
+    }
     case ';': {
       lexed.push_back(create_token(SEMI, nothing{}, l, col));
       break;

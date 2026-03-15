@@ -127,8 +127,25 @@ astptr parser::parse_unary() {
   return parse_factor();
 }
 
-astptr parser::parse_term() {
+astptr parser::parse_xor() {
   astptr node = parse_unary();
+
+  while (true) {
+    token op = peek();
+    if (op.type != token_type::XOR )
+      break;
+
+    consume();
+    astptr rhs = parse_unary();
+    node =
+        std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
+  }
+
+  return node;
+}
+
+astptr parser::parse_term() {
+  astptr node = parse_xor();
 
   while (true) {
     token op = peek();
@@ -136,7 +153,7 @@ astptr parser::parse_term() {
       break;
 
     consume();
-    astptr rhs = parse_unary();
+    astptr rhs = parse_xor();
     node =
         std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
   }
@@ -156,7 +173,6 @@ astptr parser::parse_expr() {
     node =
         std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
   }
-
   return node;
 }
 
