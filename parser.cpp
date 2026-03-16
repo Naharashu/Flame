@@ -69,6 +69,7 @@ astptr parser::parse_factor() {
           throw ParseTimeError("\tUnderflowed index of array '" + id + "'\n");
         }
       }
+      std::cerr << "\x1b[0;33mWarning:" << std::to_string(tok.line) << ":" + std::to_string(tok.column) << ":\n\taccesing array '" << id << "' with not compile time index, it may lead to errors \x1b[0m\n";
     	consume(R_SQ_BRACKET);
       if(peek().type != EQ) return std::make_unique<ArrayAccessNode>(tok, std::move(i));
       consume(EQ);
@@ -92,6 +93,7 @@ astptr parser::parse_factor() {
           throw ParseTimeError("\tUnderflowed index of array '" + id + "'\n");
         }
       }
+      std::cerr << "\x1b[0;33mWarning:" << std::to_string(tok.line) << ":" + std::to_string(tok.column) << ":\n\taccesing array '" << id << "' with not compile time index, it may lead to errors \x1b[0m\n";
       astptr value = parse_expr();
       return std::make_unique<ArrayChangeNode>(tok, std::move(i), std::move(value));
     }

@@ -12,7 +12,7 @@ bool error_exit = false;
 int main(int argc, char *argv[]) {
   if (argc > 1) {
     if (strcmp(argv[1], "-v") == 0) {
-      std::cout << "Flame compiler 0.4\nBy Naharashu\n";
+      std::cout << "Flame compiler 0.7\nBy Naharashu\n";
       return 0;
     }
     if (strcmp(argv[1], "-h") == 0) {
