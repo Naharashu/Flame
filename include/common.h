@@ -137,6 +137,10 @@ inline std::string op2string(token_type a) {
     op = " || ";
   if (a == XOR)
     op = " ^ ";
+  if (a == OR_B)
+    op = " | ";
+  if (a == AND_B)
+    op = " & ";
   return op;
 }
 

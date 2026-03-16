@@ -413,6 +413,12 @@ std::string disassemble_tok_type(token_type type) {
       return "==";
     case CONST:
       return "const";
+    case XOR:
+      return "xor";
+    case AND_B:
+      return "bitwise and";
+    case OR_B:
+      return "bitwise or";
     case EOF_:
       return "EOF";
     default:

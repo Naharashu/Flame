@@ -127,12 +127,12 @@ astptr parser::parse_unary() {
   return parse_factor();
 }
 
-astptr parser::parse_xor() {
+astptr parser::parse_and_b() {
   astptr node = parse_unary();
 
   while (true) {
     token op = peek();
-    if (op.type != token_type::XOR )
+    if (op.type != token_type::AND_B )
       break;
 
     consume();
@@ -144,8 +144,42 @@ astptr parser::parse_xor() {
   return node;
 }
 
-astptr parser::parse_term() {
+astptr parser::parse_xor() {
+  astptr node = parse_and_b();
+
+  while (true) {
+    token op = peek();
+    if (op.type != token_type::XOR )
+      break;
+
+    consume();
+    astptr rhs = parse_and_b();
+    node =
+        std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
+  }
+
+  return node;
+}
+
+astptr parser::parse_or_b() {
   astptr node = parse_xor();
+
+  while (true) {
+    token op = peek();
+    if (op.type != token_type::OR_B )
+      break;
+
+    consume();
+    astptr rhs = parse_xor();
+    node =
+        std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
+  }
+
+  return node;
+}
+
+astptr parser::parse_term() {
+  astptr node = parse_or_b();
 
   while (true) {
     token op = peek();
@@ -153,7 +187,7 @@ astptr parser::parse_term() {
       break;
 
     consume();
-    astptr rhs = parse_xor();
+    astptr rhs = parse_or_b();
     node =
         std::make_unique<BinaryNode>(std::move(node), std::move(rhs), op.type);
   }
@@ -297,6 +331,11 @@ astptr parser::parse_func_statement() {
   while (peek().type != R_BRACKET) {
     token type = consume();
     token arg_id = consume(ID);
+    if(!is_it_type(type)) {
+      parser::line = type.line;
+      parser::column = type.column;
+      throw ParseTimeError("\tUnknown type of argument '" + variant2string(arg_id.value) + "', expected i8..i64, u8..u64, bool, string, f32, f64, auto\n");
+    }
     insert(variant2string(arg_id.value), type.type, nothing{});
     astptr argument = std::make_unique<ArgumentNode>(type, arg_id);
     args_.push_back(std::move(argument));
@@ -308,7 +347,7 @@ astptr parser::parse_func_statement() {
   if (!is_it_type(return_type) && return_type.type != VOID_TYPE) {
     parser::line = return_type.line;
     parser::column = return_type.column;
-    throw ParseTimeError("\tUnknown return type in " + variant2string(id.value) + ", expected i8..64, u8..64, bool, string, void, auto\n");
+    throw ParseTimeError("\tUnknown return type in " + variant2string(id.value) + ", expected i8..64, u8..64, bool, string, void, f32, f64, auto\n");
   }
   astptr block = parse_block(variant2string(id.value));
   table.pop_back();

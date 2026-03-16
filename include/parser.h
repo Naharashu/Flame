@@ -37,7 +37,9 @@ class parser {
     
     astptr parse_expr();
     astptr parse_unary();
+    astptr parse_and_b();
     astptr parse_xor();
+    astptr parse_or_b();
     astptr parse_term();
     astptr parse_factor();
     astptr parse_statement();

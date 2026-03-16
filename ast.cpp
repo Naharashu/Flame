@@ -316,6 +316,16 @@ std::string ReAssignmentNodeExpr::gen(generator &g)
         op = " ^= ";
         break;
     }
+    case OR_B:
+    {
+        op = " |= ";
+        break;
+    }
+    case AND_B:
+    {
+        op = " &= ";
+        break;
+    }
     default:
         break;
     }

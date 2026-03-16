@@ -40,12 +40,12 @@ token_type search_type_scope(const std::string &name, unsigned int lvl) {
 
 void insert(const std::string &name,token_type type, token_value val, bool is_const, u64 size, bool is_array) {
     if(table.empty()) return;
-    table[table.size()-1].insert_or_assign(name, symbol{type, std::move(val), is_const, size});
+    table[table.size()-1].insert_or_assign(name, symbol{type, std::move(val), is_const, size, is_array});
 }
 
 void insert_top(const std::string &name,token_type type,token_value val, bool is_const, u64 size,bool is_array) {
     if(table.empty()) return;
-    table[0].insert_or_assign(name, symbol{type, std::move(val), is_const, size});
+    table[0].insert_or_assign(name, symbol{type, std::move(val), is_const, size, is_array});
 }
 
 bool exist(const std::string &name) {
