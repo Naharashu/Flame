@@ -8,6 +8,10 @@
 
 class eval_ast {
     public:
+    std::string eval_string(astptr &node) {
+        auto n = static_cast<Node*>(node.get());
+        return variant2string(search(variant2string(n->tok.value)).value);
+    }
     template<typename T>
     T eval(astptr &node) {
         switch (node->kind) {

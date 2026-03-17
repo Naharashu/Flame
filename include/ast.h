@@ -67,7 +67,8 @@ class ArgumentNode : public ASTNode {
 public:
   token type;
   token id;
-  ArgumentNode(const token t, const token id_) : type(t), id(id_) {
+  bool is_array;
+  ArgumentNode(const token t, const token id_, bool isarr) : type(t), id(id_), is_array(isarr) {
     kind = ast_type::FUNC_ARG;
   };
   void print() const override {}

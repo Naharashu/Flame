@@ -220,6 +220,7 @@ std::string ArgumentNode::gen(generator &g)
 {
     (void)g;
     std::string type_ = type_in_cpp(type);
+    if(is_array) return type_ +  variant2string(id.value) + "[]";
     return type_ + variant2string(id.value);
 }
 

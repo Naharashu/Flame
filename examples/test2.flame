@@ -3,9 +3,14 @@ func add(i32 a, i32 b) i32 {
     return a+b;
 }
 
+func add_array(i32[] a) void {
+    a[0] = a[0] + a[1];
+    return;
+}
+
 func main() i32 {
     i32[3] a = [1,2,3];
-    comptime i32 i = 2;
-    print(a[i]);
+    comptime string i = 3;
+    print(add_array());
     return 0;
 }

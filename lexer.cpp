@@ -304,6 +304,8 @@ std::vector<token> lexer::lex(std::string src) {
           type = BYTE;
         else if (fits<int16_t>(val_))
           type = WORD;
+        else if (fits<int32_t>(val_))
+          type = INT;
         else
           type = LONG;
         lexed.push_back(create_token(type, static_cast<token_value>(val_),l, col));

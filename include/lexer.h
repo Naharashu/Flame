@@ -78,7 +78,7 @@ enum token_type : unsigned char {
 };
 
 using nothing = std::monostate;
-using token_value = std::variant<nothing, long long, float, double, bool, std::string>;
+using token_value = std::variant<nothing, unsigned long long, long long, float, double, bool, std::string>;
 
 struct token {
     token_type type;
