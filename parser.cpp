@@ -47,10 +47,10 @@ astptr parser::parse_factor() {
         parser::column = tok.column;
         throw ParseTimeError("\tUse undeclared array '" + id +"'\n");
       }
-    	consume();
+      consume();
       bool have_id = false;
       std::vector<std::string> ids;
-      for(size_t i=indx-1;i<src.size();i++) {
+      for(size_t i=0;i<=src.size();i++) {
         if(peek(i).type == EQ || peek(i).type == R_SQ_BRACKET) break;
         if(peek(i).type == ID&&!have_id) {
           ids.push_back(variant2string(peek(i).value));
@@ -107,6 +107,10 @@ astptr parser::parse_factor() {
       parser::line = tok.line;
       parser::column = tok.column;
       throw ParseTimeError("\tUse undeclared variable '" + variant2string(tok.value) +"'\n");
+    }
+    if(search(variant2string(tok.value)).comptime) {
+	token_value value = search(variant2string(tok.value)).value;
+	return std::make_unique<Node>(token{LONG, value,tok.line,tok.column});
     }
     return std::make_unique<Node>(tok);
   } else if (tok.type == token_type::L_BRACKET) {
