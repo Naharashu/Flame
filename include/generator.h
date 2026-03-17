@@ -47,6 +47,7 @@ public:
       header += "#include <cstdint>\n";
     }
     for (auto &x : nodes) {
+      if(!x) continue;
       std::string c = gencode(x);
       if (c.empty())
         continue;

@@ -2,11 +2,16 @@
 #include "include/common.h"
 #include "include/generator.h"
 #include "include/lexer.h"
+#include "include/table.h"
 #include <sstream>
 #include <string>
 std::string Node::gen(generator &g)
 {
     (void)g;
+    if(tok.type==ID) {
+        symbol var = search(variant2string(tok.value));
+        if(var.comptime) return std::to_string(variant2int<long long>(var.value));
+    }
     return variant2value(tok);
 }
 

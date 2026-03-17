@@ -76,9 +76,15 @@ class parser {
         return src[indx++];
     }
     inline token peek() {
+        if(indx >= src.size()) {
+            throw ParseTimeError("\tUnexpected end of input\n");
+        }
         return src.at(indx);
     }
     inline token peek(u8 i) {
+        if(indx+i >= src.size()) {
+            throw ParseTimeError("\tUnexpected end of input\n");
+        }
         return src.at(indx+i);
     }
     std::vector<token> peek_(int n) {

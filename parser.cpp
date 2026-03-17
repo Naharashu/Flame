@@ -50,7 +50,7 @@ astptr parser::parse_factor() {
     	consume();
       bool have_id = false;
       std::vector<std::string> ids;
-      for(size_t i=0;i<src.size();i++) {
+      for(size_t i=indx-1;i<src.size();i++) {
         if(peek(i).type == EQ || peek(i).type == R_SQ_BRACKET) break;
         if(peek(i).type == ID&&!have_id) {
           ids.push_back(variant2string(peek(i).value));
@@ -75,7 +75,7 @@ astptr parser::parse_factor() {
           throw ParseTimeError("\tUnderflowed index of array '" + id + "'\n");
         }
       }
-      std::cerr << "\x1b[0;33mWarning:" << std::to_string(tok.line) << ":" + std::to_string(tok.column) << ":\n\taccesing array '" << id << "' with not compile time index, it may lead to errors \x1b[0m\n";
+      if(have_id) std::cerr << "\x1b[0;33mWarning:" << std::to_string(tok.line) << ":" + std::to_string(tok.column) << ":\n\taccesing array '" << id << "' with not compile time index, it may lead to errors \x1b[0m\n";
     	consume(R_SQ_BRACKET);
       if(peek().type != EQ) return std::make_unique<ArrayAccessNode>(tok, std::move(i));
       consume(EQ);
@@ -504,7 +504,7 @@ void parser::parse_comptime() {
   astptr val_ = parse_expr();
   eval_ast e;
   i64 val = e.eval<i64>(val_);
-  insert(id, type.type, val, false, false, true);
+  insert(id, type.type, val, false, false, false, true);
   consume(SEMI);
   return;
 }
@@ -624,7 +624,7 @@ astptr parser::parse_statement() {
     return parse_assignment(true);
   case token_type::COMPTIME:
     parse_comptime();
-    return astptr{};
+    return parse_statement();
   case token_type::BYTE_TYPE:
   case token_type::WORD_TYPE:
   case token_type::INT_TYPE:
