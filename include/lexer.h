@@ -93,7 +93,7 @@ struct token {
 
 class lexer {
 private:
-  token create_token(const token_type &a,const token_value &b,const unsigned long long &line,const unsigned long long &c, const std::string &str="");
+  token create_token(const token_type &a,const token_value &b,const unsigned long long &line,const unsigned long long &column, const std::string &str="");
   bool is_int(char c);
   bool is_letter(char c);
   unsigned long long l;

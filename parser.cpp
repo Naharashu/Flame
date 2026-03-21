@@ -435,9 +435,17 @@ astptr parser::parse_func_statement()
     {
         token type = consume();
         bool is_array = false;
+        i64 i=1;
         if (peek().type == L_SQ_BRACKET)
         {
             consume(L_SQ_BRACKET);
+            if(!is_it_int_value(peek())||!search(peek().str_value).comptime) {
+                parser::line = type.line;
+                parser::column = type.column;
+                throw ParseTimeError("\tExpected compile time size\n");
+            }
+            eval_ast e;
+            i = e.eval<i64>(parse_factor());
             consume(R_SQ_BRACKET);
             is_array = true;
         }
@@ -449,7 +457,7 @@ astptr parser::parse_func_statement()
             throw ParseTimeError("\tUnknown type of argument '" + variant2string(arg_id.str_value) +
                                  "', expected i8..i64, u8..u64, bool, string, f32, f64, auto or Type[]\n");
         }
-        insert(variant2string(arg_id.str_value), type.type, nothing{});
+        insert(arg_id.str_value, type.type, nothing{}, false, i);
         astptr argument = std::make_unique<ArgumentNode>(type, arg_id, is_array);
         args_.push_back(std::move(argument));
         if (peek().type == COMA)

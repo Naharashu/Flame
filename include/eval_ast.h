@@ -11,11 +11,11 @@
 
 class eval_ast {
     public:
-    std::string eval_string(astptr &node) {
+    std::string eval_string(const astptr &node) {
         auto n = static_cast<Node*>(node.get());
         return variant2string(n->tok.value);
     }
-    double eval_double(astptr &node) {
+    double eval_double(const astptr &node) {
         switch (node->kind) {
             case ast_type::JUSTNODE: {
                 auto n = static_cast<Node*>(node.get());
@@ -59,7 +59,7 @@ class eval_ast {
         }
     }
     template<typename T>
-    T eval(astptr &node) {
+    T eval(const astptr &node) {
         switch (node->kind) {
             case ast_type::JUSTNODE: {
                 auto n = static_cast<Node*>(node.get());

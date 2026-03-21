@@ -52,6 +52,12 @@ inline bool is_it_value(const token &a) {
   return false;
 }
 
+inline bool is_it_int_value(const token &a) {
+  if (a.type >= BYTE && a.type <= UNSIGNED)
+    return true;
+  return false;
+}
+
 inline bool is_it_type(const token &a) {
   switch (a.type) {
   case BYTE_TYPE:

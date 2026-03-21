@@ -1,14 +1,19 @@
-use stdlib;
+//use stdlib;
 
 func add(i32 a, i32 b) i32 {
     return a+b;
+}
+
+func add_(i32[3] a) i32 {
+    return a[0]+a[1];
 }
 
 func main() i32 {
     comptime f64 a = 3;
     comptime f64 b = a + 0.14;
     comptime u64 c = 2;
-    print(fmod(b, c));
+    i32[3] i=[1,2,3];
+    print(add(i));
     comptime string str = "Hi ^^";
     print(str);
     return 0;

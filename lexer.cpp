@@ -6,7 +6,7 @@
 #include <cstdlib>
 #include <string>
 
-token lexer::create_token(const token_type &a,const token_value &b,const u64 &line,const u64 &column, const std::string &str) { return token{a, b, line, column, .str_value=str}; }
+token lexer::create_token(const token_type &a,const token_value &b,const u64 &line,const u64 &column, const std::string &str) { return token{a, b, line, column, str}; }
 
 bool lexer::is_int(char c) { return c >= '0' && c <= '9'; }
 
@@ -363,6 +363,10 @@ std::string disassemble_tok_type(token_type type) {
       return "(";
     case R_BRACKET:
       return ")";
+    case L_SQ_BRACKET:
+      return "[";
+    case R_SQ_BRACKET:
+      return "]";
     case L_BRACES:
       return "{";
     case R_BRACES:
