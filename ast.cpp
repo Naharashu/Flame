@@ -224,7 +224,8 @@ std::string ArgumentNode::gen(generator &g)
 {
     (void)g;
     std::string type_ = type_in_cpp(type);
-    if(is_array) return type_ +  id.str_value + "[]";
+    if(is_array) 
+        return "std::array<"+type_+','+std::to_string(size_if_array)+">"+id.str_value;
     return type_ + id.str_value;
 }
 
@@ -360,12 +361,20 @@ std::string ArrayNode::gen(generator &g)
     {
         values_ = "";
     }
+
+    if(!values.empty()) {
+        return "std::array<"+type_+','+std::to_string(size)+">"+id + '=' + values_;
+    }
+    return "std::array<"+type_+','+std::to_string(size)+">"+id;
+
+    /*
     if (!values.empty())
         return type_ + id + "[" + std::to_string(size) + "] = " + values_;
     return type_ + id + "[" + std::to_string(size) + "]";
     if (!values.empty())
         return type_ + id + "[] = " + values_;
     return type_ + id + "[]";
+    */
 }
 
 std::string ArrayAccessNode::gen(generator &g)

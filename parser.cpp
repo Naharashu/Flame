@@ -36,8 +36,24 @@ astptr parser::parse_factor()
             }
             consume();
             std::vector<astptr> args_;
+            u64 arg_i=0;
+            fsymbol* f = fsearch(tok.str_value);
             while (peek().type != R_BRACKET)
-            {
+            {   
+                token c = peek();
+                token n = peek(1);
+                if((c.type==ID&&(n.type==COMA||n.type==R_BRACKET)&&f)) {
+                    if(arg_i>=f->args.size()) {
+                        parser::line = c.line;
+                        parser::column = c.column;
+                        throw ParseTimeError("\tExpected " + std::to_string(f->args.size()) + " arguments, got " + std::to_string(arg_i) + "\n");
+                    }
+                    if(search(c.str_value).is_array&&search(c.str_value).size!=f->args[arg_i].size) {
+                        parser::line = c.line;
+                        parser::column = c.column;
+                        throw ParseTimeError("\tExpected array of size '" + std::to_string(f->args[arg_i++].size) + "'\n");
+                    }
+                }
                 args_.push_back(parse_or());
                 if (peek().type == COMA)
                     consume();
@@ -74,7 +90,7 @@ astptr parser::parse_factor()
             if (!have_id)
             {
                 eval_ast e;
-                i64 index = e.eval<i64>(i);
+                u64 index = e.eval<u64>(i);
                 symbol array = search(id);
                 if (index >= array.size)
                 {
@@ -108,7 +124,7 @@ astptr parser::parse_factor()
             if (!have_id)
             {
                 eval_ast e;
-                i64 index = e.eval<i64>(i);
+                u64 index = e.eval<u64>(i);
                 if (index >= array.size)
                 {
                     parser::line = tok.line;
@@ -429,23 +445,25 @@ astptr parser::parse_func_statement()
     consume(FUNC);
     token id = consume(ID);
     consume(L_BRACKET);
+    finsert(id.str_value, FUNC, {});
     std::vector<astptr> args_;
     table.emplace_back();
     while (peek().type != R_BRACKET)
     {
         token type = consume();
         bool is_array = false;
-        i64 i=1;
+        u64 i=1;
         if (peek().type == L_SQ_BRACKET)
         {
             consume(L_SQ_BRACKET);
-            if(!is_it_int_value(peek())||!search(peek().str_value).comptime) {
+            token size = peek();
+            if(!is_it_int_value(size)||(size.str_value != "" && !search(size.str_value).comptime)) {
                 parser::line = type.line;
                 parser::column = type.column;
                 throw ParseTimeError("\tExpected compile time size\n");
             }
             eval_ast e;
-            i = e.eval<i64>(parse_factor());
+            i = e.eval<u64>(parse_factor());
             consume(R_SQ_BRACKET);
             is_array = true;
         }
@@ -458,8 +476,9 @@ astptr parser::parse_func_statement()
                                  "', expected i8..i64, u8..u64, bool, string, f32, f64, auto or Type[]\n");
         }
         insert(arg_id.str_value, type.type, nothing{}, false, i);
-        astptr argument = std::make_unique<ArgumentNode>(type, arg_id, is_array);
+        astptr argument = std::make_unique<ArgumentNode>(type, arg_id, is_array, i);
         args_.push_back(std::move(argument));
+        finsert_arg(id.str_value, {type.type, nothing{}, false, i, is_array});
         if (peek().type == COMA)
             consume();
     }
@@ -604,7 +623,7 @@ astptr parser::parse_array(bool is_const)
     consume(SEMI);
     insert(id, type.type, nothing{}, is_const, els, true);
     if (size_defined)
-        return std::make_unique<ArrayNode>(type, std::move(values), id, variant2int<long long>(size.str_value));
+        return std::make_unique<ArrayNode>(type, std::move(values), id, variant2int<unsigned long long>(size.value));
     else
         return std::make_unique<ArrayNode>(type, std::move(values), id, els);
 }
@@ -696,11 +715,11 @@ astptr parser::parse_assignment(bool is_const, bool comptime)
             peek().type == MOD)
         {
             token_type op = consume().type;
-            if (!exist(variant2string(type.str_value)))
+            if (!exist(type.str_value))
             {
                 parser::line = type.line;
                 parser::column = type.column;
-                throw ParseTimeError("\tUse undeclared variable '" + variant2string(type.str_value) + "'\n");
+                throw ParseTimeError("\tUse undeclared variable '" + type.str_value + "'\n");
             }
             consume(EQ);
             astptr value = parse_or();

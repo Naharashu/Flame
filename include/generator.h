@@ -46,6 +46,9 @@ public:
     if(header.find("<cstdint>")==std::string::npos) {
       header += "#include <cstdint>\n";
     }
+    if(header.find("<array>")==std::string::npos) {
+      header += "#include <array>\n";
+    }
     for (auto &x : nodes) {
       if(!x) continue;
       std::string c = gencode(x);

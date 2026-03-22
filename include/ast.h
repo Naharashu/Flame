@@ -68,7 +68,8 @@ public:
   token type;
   token id;
   bool is_array;
-  ArgumentNode(const token t, const token id_, bool isarr) : type(t), id(id_), is_array(isarr) {
+  u64 size_if_array=0;
+  ArgumentNode(const token t, const token id_, bool isarr, u64 s) : type(t), id(id_), is_array(isarr), size_if_array(s) {
     kind = ast_type::FUNC_ARG;
   };
   void print() const override {}

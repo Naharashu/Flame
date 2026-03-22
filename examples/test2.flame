@@ -12,8 +12,10 @@ func main() i32 {
     comptime f64 a = 3;
     comptime f64 b = a + 0.14;
     comptime u64 c = 2;
+    //i32[3] i=[1,2,3];
     i32[3] i=[1,2,3];
-    print(add(i));
+    i32[2] j=[1,2];
+    print(add_(j));
     comptime string str = "Hi ^^";
     print(str);
     return 0;

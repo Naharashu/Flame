@@ -22,13 +22,13 @@ class eval_ast {
                 if(n->tok.type==ID) {
                     try {
                         return variant2double(search(variant2string(n->tok.value)).value);
-                    } catch(std::bad_variant_access) {
+                    } catch(std::bad_variant_access &e) {
                         return variant2float(search(variant2string(n->tok.value)).value);
                     }
                 }
                 try {
                     return variant2double(n->tok.value);
-                } catch(std::bad_variant_access) {
+                } catch(std::bad_variant_access &e) {
                     return variant2float(n->tok.value);
                 }
             }

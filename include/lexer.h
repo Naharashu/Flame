@@ -88,7 +88,7 @@ struct token {
     token_value value;
     unsigned long long line;
     unsigned long long column;
-    std::string str_value;
+    std::string str_value="";
 };
 
 class lexer {

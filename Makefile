@@ -8,7 +8,7 @@ clang: main
 
 all: main
 
-debug: CXX_FLAGS = -std=gnu++20 -g2 -O0 -Wall -Wextra
+debug: CXX_FLAGS = -std=gnu++20 -g3 -O0 -Wall -Wextra
 debug: main
 
 main: $(CXX_OBJ)
