@@ -4,9 +4,9 @@ Flame is programming language
 
 
 #### Changelog
-0.6.2:
-  > added const keyword, 
+0.7.0:
+  > vectors, 
 
-  > added xor(^), bitwise and(&), bitwise or(|),
+  > arrays as arguments for functions
 
-  > added very good error and warning handling, fixed bugs
+  > structures
