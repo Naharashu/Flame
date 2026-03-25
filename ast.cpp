@@ -128,8 +128,7 @@ std::string UnaryNode::gen(generator &g)
 std::string FuncCallNode::gen(generator &g)
 {
     std::string args_;
-    std::string name = id.str_value;
-    if (name == "print")
+    if (id == "print")
     {
         args_ = "std::cout << ";
         for (auto &x : args)
@@ -140,7 +139,7 @@ std::string FuncCallNode::gen(generator &g)
         args_ += "std::endl";
         return args_;
     }
-    if (name == "input")
+    if (id == "input")
     {
         args_ = "std::cin ";
         args_ += " >> ";
@@ -148,7 +147,7 @@ std::string FuncCallNode::gen(generator &g)
         return args_;
     }
 
-    if (name == "sizeof")
+    if (id == "sizeof")
     {
         args_ = "sizeof(";
         args_ += g.gencode(args.at(0)) + ')';
@@ -160,7 +159,7 @@ std::string FuncCallNode::gen(generator &g)
         if (i + 1 < args.size())
             args_ += ", ";
     }
-    return id.str_value + '(' + args_ + ')';
+    return id + '(' + args_ + ')' + want_get;
 }
 
 std::string CondNode::gen(generator &g)
@@ -399,4 +398,12 @@ std::string ModuleNode::gen(generator &g)
     code << gen.generate(module);
     g.header += code.str();
     return "";
+}
+
+std::string MethodNode::gen(generator &g) {
+    std::string code = parent;
+    for(auto &x : children) {
+        code += '.' + g.gencode(x);
+    }
+    return code;
 }

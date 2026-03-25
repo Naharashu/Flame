@@ -7,6 +7,7 @@
 std::vector<std::unordered_map<std::string, symbol>> table;
 std::unordered_map<std::string, fsymbol> ftable;
 
+
 token_value search_value(const std::string &name) {
     for(auto &scope : std::ranges::reverse_view(table)) {
         if(scope.contains(name)) {

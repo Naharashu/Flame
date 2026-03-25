@@ -61,7 +61,7 @@ class parser {
     astptr parse_array(bool is_const=false);
     astptr parse_vector();
     void parse_comptime();
-    astptr parse_();
+    astptr parse_method();
     astptr parse_assignment(bool is_const=false, bool comptime=false);
     token consume() {
         if(indx >= src.size()) {

@@ -1,4 +1,4 @@
-// Stdlib v1.1 by Naharashu (13.03.26)
+// Stdlib v1.2 by Naharashu (25.03.26)
 // MIT License
 func abs(i64 a) i64 {
     if(a > 0) {
@@ -15,12 +15,19 @@ func sqrt(f64 a) f64 {
     return x;
 }
 
-func floor(f64 a) f64 {
+func floor_helper(f64 a) f64 {
     i64 res = a;
     if(a<0 && a!=res) {
         return res-1;
     }
     return res;
+}
+
+func floor(f64 a) f64 {
+    if((a-floor_helper(a))<0.5) {
+        return floor_helper(a);
+    }
+    return (floor_helper(a+1));
 }
 
 func fmod(f64 a, f64 b) f64 {

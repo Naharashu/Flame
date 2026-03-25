@@ -16,6 +16,7 @@
 
 astptr parser::parse_factor()
 {
+    if(peek().type==ID&&peek(1).type==DOT) return parse_method();
     token tok = consume();
     if (tok.type == token_type::BYTE || tok.type == token_type::WORD || tok.type == token_type::INT ||
         tok.type == token_type::LONG || tok.type == token_type::UNSIGNED || tok.type == token_type::NULL_ || tok.type == token_type::FLOAT ||
@@ -66,7 +67,7 @@ astptr parser::parse_factor()
                     consume();
             }
             consume(R_BRACKET);
-            return std::make_unique<FuncCallNode>(tok, std::move(args_));
+            return std::make_unique<FuncCallNode>(tok.str_value, std::move(args_), "");
         }
         if (peek().type == L_SQ_BRACKET)
         {
@@ -305,7 +306,8 @@ astptr parser::parse_expr()
 astptr parser::parse_use()
 {
     token m = consume(USE);
-    std::string name = variant2string(consume(ID).str_value) + "." + "flame";
+    const std::string mname = consume(ID).str_value;
+    std::string name = mname + "." + "flame";
     consume(SEMI);
     std::ifstream file(name);
     std::ostringstream oss;
@@ -338,7 +340,7 @@ astptr parser::parse_use()
             parser::column = m.column;
             throw ParseTimeError("\tError in module '" + name + "'\n");
         }
-        return std::make_unique<ModuleNode>(std::move(module));
+        return std::make_unique<ModuleNode>(std::move(module), mname);
     }
     if (!file)
     {
@@ -365,7 +367,7 @@ astptr parser::parse_use()
             sync();
         }
     }
-    return std::make_unique<ModuleNode>(std::move(module));
+    return std::make_unique<ModuleNode>(std::move(module), mname);
 }
 
 astptr parser::parse_comparison()
@@ -496,7 +498,7 @@ astptr parser::parse_func_statement()
         insert(arg_id.str_value, type.type, nothing{}, false, i);
         astptr argument = std::make_unique<ArgumentNode>(type, arg_id, is_array, i);
         args_.push_back(std::move(argument));
-        finsert_arg(id.str_value, {type.type, nothing{}, false, i, is_array});
+        finsert_arg(id.str_value, {.type=type.type, .value=nothing{}, .is_const=false, .size=i, .is_array=is_array, .name=arg_id.str_value});
         if (peek().type == COMA)
             consume();
     }
@@ -828,9 +830,72 @@ astptr parser::parse_assignment(bool is_const, bool comptime)
     return std::make_unique<AssignmentNodeExpr>(type.type, id, std::move(value), is_const);
 }
 
+astptr parser::parse_method() {
+    token parent = consume(ID);
+    if(!exist(parent.str_value)) {
+        parser::line = parent.line;
+        parser::column = parent.column;
+        throw ParseTimeError("\tUse undeclared variable '"+parent.str_value+"'\n");
+    }
+    std::vector<astptr> children;
+
+    while(peek().type==DOT) {
+        consume(DOT);
+        token child = consume(ID);
+        if(!exist(parent.str_value)) {
+            parser::line = child.line;
+            parser::column = child.column;
+            throw ParseTimeError("\tUse undeclared variable '"+child.str_value+"'\n");
+        }
+        if(peek().type==L_BRACKET) {
+            consume(L_BRACKET);
+            std::vector<astptr> args_;
+            u64 arg_i=0;
+            fsymbol* f = fsearch(child.str_value);
+            while (peek().type != R_BRACKET)
+            {   
+                token c = peek();
+                token n = peek(1);
+                if((c.type==ID&&(n.type==COMA||n.type==R_BRACKET)&&f)) {
+                    if(arg_i>=f->args.size()) {
+                        parser::line = c.line;
+                        parser::column = c.column;
+                        throw ParseTimeError("\tExpected " + std::to_string(f->args.size()) + " arguments, got " + std::to_string(arg_i) + "\n");
+                    }
+                    if(search(c.str_value).type != f->args[arg_i].type&&f->type!=FUNC) {
+                        parser::line = c.line;
+                        parser::column = c.column;
+                        throw ParseTimeError("\tExpected argument of type '" + disassemble_tok_type(f->args[arg_i].type) + "', but got '" + disassemble_tok_type(search_type(c.str_value)) + "'\n");
+                    }
+                    if(search(c.str_value).is_array&&search(c.str_value).size!=f->args[arg_i].size) {
+                        parser::line = c.line;
+                        parser::column = c.column;
+                        throw ParseTimeError("\tExpected array of size '" + std::to_string(f->args[arg_i].size) + "'\n");
+                    }
+                }
+                arg_i++;
+                args_.push_back(parse_or());
+                if (peek().type == COMA)
+                    consume();
+            }
+            consume(R_BRACKET);
+            children.emplace_back(std::make_unique<FuncCallNode>(child.str_value, std::move(args_), ""));
+        } else {
+            children.emplace_back(std::make_unique<Node>(child));
+        }
+
+    }
+    return std::make_unique<MethodNode>(std::move(children), parent.str_value, search_type(parent.str_value));
+}
+
+astptr parse_vector() {
+    return nullptr; // later
+}
+
 astptr parser::parse_statement()
 {
     token tok = peek();
+    if(tok.type==ID&&peek(1).type==DOT) return parse_method();
     switch (tok.type)
     {
     case token_type::IF:
@@ -852,6 +917,8 @@ astptr parser::parse_statement()
         return parse_break_continue();
     case token_type::CONST:
         return parse_assignment(true);
+    case token_type::VEC:
+        return parse_vector();
     case token_type::COMPTIME:
         parse_comptime();
         return parse_statement();

@@ -31,6 +31,7 @@ using ast_type = enum class ast_type : uint8_t {
   ARRAY,
   ARRAY_ACCESS,
   ARRAY_CHANGE,
+  NAMESPACE,
 };
 
 using astptr = std::unique_ptr<ASTNode>;
@@ -69,7 +70,7 @@ public:
   token id;
   bool is_array;
   u64 size_if_array=0;
-  ArgumentNode(const token t, const token id_, bool isarr, u64 s) : type(t), id(id_), is_array(isarr), size_if_array(s) {
+  ArgumentNode(const token& t, const token& id_, bool isarr, u64 s) : type(t), id(id_), is_array(isarr), size_if_array(s) {
     kind = ast_type::FUNC_ARG;
   };
   void print() const override {}
@@ -166,10 +167,11 @@ public:
 
 class FuncCallNode : public ASTNode {
 public:
-  token id;
+  std::string id;
   std::vector<astptr> args;
-  FuncCallNode(const token &id_, std::vector<astptr> args_)
-      : id(id_), args(std::move(args_)) {
+  std::string want_get="";
+  FuncCallNode(const std::string &id_, std::vector<astptr> args_,const std::string &wg)
+      : id(id_), args(std::move(args_)), want_get(wg) {
     kind = ast_type::FuncCall;
   };
 
@@ -180,7 +182,7 @@ public:
 class BlockNode : public ASTNode {
 public:
   std::vector<astptr> stmts;
-  BlockNode(std::vector<astptr> stmts_) : stmts(std::move(stmts_)) {
+  explicit BlockNode(std::vector<astptr> stmts_) : stmts(std::move(stmts_)) {
     kind = ast_type::BLOCK;
   };
 
@@ -251,7 +253,8 @@ public:
 class ModuleNode : public ASTNode {
 public:
   std::vector<astptr> module;
-  ModuleNode(std::vector<astptr> m) : module(std::move(m)) { kind = ast_type::MODULE; }
+  std::string mname;
+  ModuleNode(std::vector<astptr> m,const std::string &name) : module(std::move(m)), mname(name) { kind = ast_type::MODULE; }
 
   void print() const override {}
   std::string gen(generator &g) override;
@@ -275,7 +278,7 @@ class IncDecVarNode : public ASTNode {
 public:
   u8 type;
   token_value id;
-  IncDecVarNode(u8 t, token_value n) : type(t), id(n) {}
+  IncDecVarNode(u8 t,const token_value &n) : type(t), id(n) {}
   std::string gen(generator &g) override;
 };
 
@@ -297,7 +300,7 @@ class ArrayAccessNode : public ASTNode {
 public:
   token id;
   astptr index;
-  ArrayAccessNode(token id_, astptr i_) : id(id_), index(std::move(i_)) {
+  ArrayAccessNode(const token &id_, astptr i_) : id(id_), index(std::move(i_)) {
     kind = ast_type::ARRAY_ACCESS;
   }
   std::string gen(generator &g) override;
@@ -308,10 +311,32 @@ public:
   token id;
   astptr index;
   astptr value;
-  ArrayChangeNode(token id_, astptr i_, astptr v) : id(id_), index(std::move(i_)), value(std::move(v)) {
+  ArrayChangeNode(const token &id_, astptr i_, astptr v) : id(id_), index(std::move(i_)), value(std::move(v)) {
     kind = ast_type::ARRAY_CHANGE;
   }
   std::string gen(generator &g) override;
 };
 
+
+class NamespaceAccessNode : public ASTNode {
+  public:
+  std::string namespace_="";
+  astptr node;
+  NamespaceAccessNode(const std::string &name, astptr n) : namespace_(name), node(std::move(n)) {
+    kind = ast_type::NAMESPACE;
+  }
+  std::string gen(generator &g) override;
+};
+
+class MethodNode : public ASTNode {
+  public:
+  std::vector<astptr> children;
+  token_type type;
+  std::string parent;
+  MethodNode(std::vector<astptr> m,const std::string &name, const token_type &t) : children(std::move(m)), parent(name), type(t) { //kind = ast_type::MODULE;
+     }
+
+  void print() const override {}
+  std::string gen(generator &g) override;
+};
 

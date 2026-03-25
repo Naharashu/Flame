@@ -1,4 +1,4 @@
-//use stdlib;
+use stdlib;
 
 func add(i32 a, i32 b) i32 {
     return a+b;
@@ -21,8 +21,8 @@ func main() i32 {
     i32[3] i=array_();
     i32[2] j=[1,2];
     i32 f = -3;
-    print(add_(i)+f);
+    print(floor(3.9));
     comptime string str = "Hi ^^";
-    print(str);
+    print(j.size());
     return 0;
 }

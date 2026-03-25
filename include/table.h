@@ -12,6 +12,7 @@ using symbol = struct symbol {
     u64 size=0;
     bool is_array=false;
     bool comptime=false;
+    std::string name="";
 };
 
 using fsymbol = struct fsymbol {

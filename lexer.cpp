@@ -250,6 +250,8 @@ std::vector<token> lexer::lex(std::string src) {
         lexed.push_back(create_token(VEC, nothing{}, l, col));
       else if (id == "struct")
         lexed.push_back(create_token(STRUCT, nothing{}, l, col));
+      else if (id == "namespace")
+        lexed.push_back(create_token(NAMESPACE, nothing{}, l, col));
       else
         lexed.push_back(create_token(ID, id, l,col, id));
 
@@ -357,6 +359,8 @@ std::string disassemble_tok_type(token_type type) {
       return ";";
     case COMA:
       return ",";
+    case DOT:
+      return ".";
     case ID:
       return "ID";
     case L_BRACKET:

@@ -75,6 +75,7 @@ enum token_type : unsigned char {
     COMPTIME,
     STRUCT,
     VEC,
+    NAMESPACE,
     ID,
     NEWLINE,
     EOF_
