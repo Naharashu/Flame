@@ -95,12 +95,12 @@ astptr parser::parse_factor()
                 }
             }
             astptr i = parse_expr();
+            symbol array = search(id);
             if (!have_id)
             {
                 eval_ast e;
                 u64 index = e.eval<u64>(i);
-                symbol array = search(id);
-                if (index >= array.size)
+                if (index >= array.size&&!array.is_vector)
                 {
                     parser::line = tok.line;
                     parser::column = tok.column;
@@ -120,9 +120,8 @@ astptr parser::parse_factor()
                           << "' with not compile time index, it may lead to errors \x1b[0m\n";
             consume(R_SQ_BRACKET);
             if (peek().type != EQ)
-                return std::make_unique<ArrayAccessNode>(tok, std::move(i));
+                return std::make_unique<ArrayAccessNode>(tok, std::move(i), array.is_vector);
             consume(EQ);
-            symbol array = search(id);
             if (array.is_const)
             {
                 parser::line = tok.line;
@@ -133,7 +132,7 @@ astptr parser::parse_factor()
             {
                 eval_ast e;
                 u64 index = e.eval<u64>(i);
-                if (index >= array.size)
+                if (index >= array.size&&!array.is_vector)
                 {
                     parser::line = tok.line;
                     parser::column = tok.column;
@@ -725,6 +724,7 @@ astptr parser::parse_assignment(bool is_const, bool comptime)
 {
     if (is_const)
         consume(CONST);
+    if(peek().type==VEC) return parse_vector(is_const);
     if (peek().type == ID && (peek(1).type == L_BRACKET || peek(1).type == L_SQ_BRACKET))
     {
         astptr node = parse_factor();
@@ -832,11 +832,13 @@ astptr parser::parse_assignment(bool is_const, bool comptime)
 
 astptr parser::parse_method() {
     token parent = consume(ID);
+    
     if(!exist(parent.str_value)) {
         parser::line = parent.line;
         parser::column = parent.column;
         throw ParseTimeError("\tUse undeclared variable '"+parent.str_value+"'\n");
     }
+    symbol var = search(parent.str_value);
     std::vector<astptr> children;
 
     while(peek().type==DOT) {
@@ -880,16 +882,63 @@ astptr parser::parse_method() {
             }
             consume(R_BRACKET);
             children.emplace_back(std::make_unique<FuncCallNode>(child.str_value, std::move(args_), ""));
+            if(peek().type==SEMI) consume(SEMI);
         } else {
             children.emplace_back(std::make_unique<Node>(child));
+            if(peek().type==SEMI) consume(SEMI);
         }
 
     }
+    if(var.is_vector) return std::make_unique<MethodNode>(std::move(children), parent.str_value, VEC);
+    if(peek().type==SEMI) consume(SEMI);
     return std::make_unique<MethodNode>(std::move(children), parent.str_value, search_type(parent.str_value));
 }
 
-astptr parser::parse_vector() {
-    return nullptr; // later
+astptr parser::parse_vector(bool is_const) {
+    consume(VEC);
+    token type = consume();
+    if(!is_it_type(type)) {
+        parser::line = type.line;
+        parser::column = type.column;
+        throw ParseTimeError("\tUnknow type of vector\n");
+    }
+    if(type.type==AUTO_TYPE) {
+        parser::line = type.line;
+        parser::column = type.column;
+        throw ParseTimeError("\tVector cannot be defined with 'auto' type\n");
+    }
+    token id = consume(ID);
+    if (peek().type == SEMI)
+    {
+        token semi = consume(SEMI);
+        parser::line = semi.line;
+        parser::column = semi.column;
+        throw ParseTimeError("\tDeclaring vector '" + id.str_value + "' without initializing values\n");
+    }
+    consume(EQ);
+    if(peek().type==ID) {
+        astptr value = parse_factor();
+        consume(SEMI);
+        std::vector<astptr> values;
+        values.emplace_back(std::move(value));
+        insert(id.str_value, type.type, nothing{}, is_const, 0, true, false, true);
+        return std::make_unique<ArrayNode>(type, std::move(values), id.str_value, 0, true, true);
+    }
+    consume(L_SQ_BRACKET);
+    std::vector<astptr> values;
+    u64 els = 0;
+    while (peek().type != R_SQ_BRACKET)
+    {
+        astptr value = parse_or();
+        if (peek().type == COMA)
+            consume();
+        values.push_back(std::move(value));
+        els++;
+    }
+    consume(R_SQ_BRACKET);
+    consume(SEMI);
+    insert(id.str_value, type.type, nothing{}, is_const, els, true, false, true);
+    return std::make_unique<ArrayNode>(type, std::move(values), id.str_value, els, false, true);
 }
 
 astptr parser::parse_statement()

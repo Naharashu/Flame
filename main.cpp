@@ -20,8 +20,9 @@ int main(int argc, char *argv[]) {
       std::cout << "-v - version of compiler\n";
       std::cout << "-C - generate only C++ code\n";
       std::cout << "-lexer-debug - output lexed tokens\n";
-      std::cout << "-Os - generate C++ with -O3\n";
+      std::cout << "-O3 - generate C++ with -O3\n";
       std::cout << "-O0 - generate C++ with -O0\n";
+      std::cout << "-O4 - generate C++ with -O3, -funroll-loops and -march=native\n";
       return 0;
     }
   }
@@ -29,6 +30,7 @@ int main(int argc, char *argv[]) {
   std::string out_name = "out";
   bool lexer_output = false;
   bool fast_code = false;
+  bool super_fast_code = false;
   bool slow_code = false;
   for (int i = 0; i < argc; i++) {
     if (strcmp(argv[i], "-C") == 0)
@@ -37,10 +39,12 @@ int main(int argc, char *argv[]) {
       out_name = argc > i + 1 ? argv[i + 1] : "out";
     if (strcmp(argv[i], "-lexer-debug") == 0)
       lexer_output = true;
-    if (strcmp(argv[i], "-Os") == 0)
+    if (strcmp(argv[i], "-O3") == 0)
       fast_code = true;
     if (strcmp(argv[i], "-O0") == 0)
       slow_code = true;
+    if (strcmp(argv[i], "-Oe") == 0)
+      super_fast_code = true;
   }
   lexer lex;
   std::string code;
@@ -96,6 +100,7 @@ int main(int argc, char *argv[]) {
     system(cleanup.c_str());
     std::string output;
     if(slow_code) output = "g++ -O0 temp_flame.cpp -o " + out_name;
+    else if(super_fast_code) output = "g++ -O3 -funroll-loops -march=native temp_flame.cpp -o " + out_name;
     else output = !fast_code ? "g++ temp_flame.cpp -o " + out_name : "g++ -O3 temp_flame.cpp -o " + out_name;
     system(output.c_str());
   }

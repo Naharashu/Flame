@@ -49,6 +49,9 @@ public:
     if(header.find("<array>")==std::string::npos) {
       header += "#include <array>\n";
     }
+    if(header.find("<vector>")==std::string::npos) {
+      header += "#include <vector>\n";
+    }
     for (auto &x : nodes) {
       if(!x) continue;
       std::string c = gencode(x);

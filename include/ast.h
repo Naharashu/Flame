@@ -289,8 +289,9 @@ public:
   std::string id;
   unsigned long long size;
   bool is_init=false;
-  ArrayNode(const token &t, std::vector<astptr> v, const std::string &i,unsigned long long s, bool ii=false)
-      : type(t), values(std::move(v)), id(i), size(s), is_init(ii) {
+  bool is_vector=false;
+  ArrayNode(const token &t, std::vector<astptr> v, const std::string &i,unsigned long long s, bool ii=false, const bool &vec=false)
+      : type(t), values(std::move(v)), id(i), size(s), is_init(ii), is_vector(vec) {
     kind = ast_type::ARRAY;
   }
   std::string gen(generator &g) override;
@@ -300,7 +301,8 @@ class ArrayAccessNode : public ASTNode {
 public:
   token id;
   astptr index;
-  ArrayAccessNode(const token &id_, astptr i_) : id(id_), index(std::move(i_)) {
+  bool is_vector=false;
+  ArrayAccessNode(const token &id_, astptr i_, bool is_v=false) : id(id_), index(std::move(i_)), is_vector(is_v) {
     kind = ast_type::ARRAY_ACCESS;
   }
   std::string gen(generator &g) override;
@@ -311,7 +313,8 @@ public:
   token id;
   astptr index;
   astptr value;
-  ArrayChangeNode(const token &id_, astptr i_, astptr v) : id(id_), index(std::move(i_)), value(std::move(v)) {
+  bool is_vector=false;
+  ArrayChangeNode(const token &id_, astptr i_, astptr v, bool is_v=false) : id(id_), index(std::move(i_)), value(std::move(v)), is_vector(is_v) {
     kind = ast_type::ARRAY_CHANGE;
   }
   std::string gen(generator &g) override;
@@ -333,7 +336,7 @@ class MethodNode : public ASTNode {
   std::vector<astptr> children;
   token_type type;
   std::string parent;
-  MethodNode(std::vector<astptr> m,const std::string &name, const token_type &t) : children(std::move(m)), parent(name), type(t) { //kind = ast_type::MODULE;
+  MethodNode(std::vector<astptr> m,const std::string &name, const token_type &t) : children(std::move(m)), type(t), parent(name) { //kind = ast_type::MODULE;
      }
 
   void print() const override {}

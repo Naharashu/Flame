@@ -347,6 +347,30 @@ std::string ReAssignmentNodeExpr::gen(generator &g)
 
 std::string ArrayNode::gen(generator &g)
 {
+    if(is_vector) {
+        std::string type_ = type_in_cpp(type);
+        if(is_init) {
+            return "std::vector<"+type_+">"+id + '=' + g.gencode(values.at(0));
+        }
+        std::string values_ = "{";
+        if (!values.empty())
+        {
+        for (u64 i = 0; i < values.size(); i++)
+        {
+            values_ += g.gencode(values[i]);
+            if (i + 1 < values.size())
+                values_ += ", ";
+            }
+            values_ += "}";
+        }
+        else
+        {
+            values_ = "";
+        }
+        if(!values.empty()) {
+            return "std::vector<"+type_+">"+id + '=' + values_;
+        }
+    }
     std::string type_ = type_in_cpp(type);
     if(is_init) {
         return "std::array<"+type_+','+std::to_string(size)+">"+id + '=' + g.gencode(values.at(0));
@@ -366,10 +390,8 @@ std::string ArrayNode::gen(generator &g)
     {
         values_ = "";
     }
-    if(!values.empty()) {
-        return "std::array<"+type_+','+std::to_string(size)+">"+id + '=' + values_;
-    }
-    return "std::array<"+type_+','+std::to_string(size)+">"+id;
+    return "std::array<"+type_+','+std::to_string(size)+">"+id + '=' + values_;
+    //return "std::array<"+type_+','+std::to_string(size)+">"+id;
 
     /*
     if (!values.empty())
@@ -383,6 +405,7 @@ std::string ArrayNode::gen(generator &g)
 
 std::string ArrayAccessNode::gen(generator &g)
 {
+    if(is_vector) return id.str_value + ".at(" + g.gencode(index) + ")";
     return id.str_value + "[" + g.gencode(index) + "]";
 }
 
@@ -403,6 +426,22 @@ std::string ModuleNode::gen(generator &g)
 std::string MethodNode::gen(generator &g) {
     std::string code = parent;
     for(auto &x : children) {
+        if(type==VEC) {
+            if(x->kind==ast_type::FuncCall) {
+                auto n = static_cast<FuncCallNode*>(x.get());
+                if(n->id=="push") {
+                    code += '.';
+                    std::string args_;
+                    args_ += g.gencode(n->args[0]);
+                    code += "emplace_back(" + args_ + ')';
+                    return code;
+                } else if(n->id=="pop") {
+                    code += '.';
+                    code += "pop_back()";
+                    return code;
+                }
+            }
+        }
         code += '.' + g.gencode(x);
     }
     return code;

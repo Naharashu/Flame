@@ -13,6 +13,7 @@ using symbol = struct symbol {
     bool is_array=false;
     bool comptime=false;
     std::string name="";
+    bool is_vector=false;
 };
 
 using fsymbol = struct fsymbol {
@@ -34,8 +35,8 @@ token_type search_type(const std::string &name);
 token_type search_type_scope(const std::string &name, unsigned int lvl);
 
 
-void insert(const std::string &name,token_type type, token_value val, bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false);
-void insert_top(const std::string &name,token_type type, token_value val,bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false);
+void insert(const std::string &name,token_type type, token_value val, bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false, bool is_vector=false);
+void insert_top(const std::string &name,token_type type, token_value val,bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false, bool is_vector=false);
 
 bool exist(const std::string &name);
 

@@ -22,7 +22,10 @@ func main() i32 {
     i32[2] j=[1,2];
     i32 f = -3;
     print(floor(3.9));
+    vec i32 a = [1,2,3];
     comptime string str = "Hi ^^";
-    print(j.size());
+    a.push(4);
+    a.pop();
+    print(a[3]);
     return 0;
 }
