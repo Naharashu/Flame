@@ -75,6 +75,14 @@ std::string BinaryNode::gen(generator &g)
         g.column = op.column;
         throw TranspileTimeError(err.c_str());
     }
+    if (float_ && (op.type == OR_B||op.type==AND_B||op.type==XOR))
+    {
+        std::string err = "Cannot do xor, bitwise or/and for floats, sorry:\n\t";
+        err += res + '\n';
+        g.line = op.line;
+        g.column = op.column;
+        throw TranspileTimeError(err.c_str());
+    }
     else if (string_to_int_op)
     {
         std::string err = "Cannot do math with string and integer:\n\t";
