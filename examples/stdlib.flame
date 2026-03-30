@@ -1,4 +1,4 @@
-// Stdlib v1.2 by Naharashu (25.03.26)
+// Stdlib v1.3 by Naharashu (30.03.26)
 // MIT License
 func abs(i64 a) i64 {
     if(a > 0) {
@@ -43,3 +43,10 @@ func pow(f64 a, i32 b) f64 {
     return res;
 }
 
+func fshiftr(f64 a, i8 n) f64 {
+    return a/(pow(2,n));
+}
+
+func fshiftl(f64 a, i8 n) f64 {
+    return a*(pow(2,n));
+}

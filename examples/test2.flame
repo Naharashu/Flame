@@ -26,6 +26,6 @@ func main() i32 {
     comptime string str = "Hi ^^";
     a.push(4);
     a.pop();
-    print(j[1]);
+    print(fshiftl(3.0, 2));
     return 0;
 }

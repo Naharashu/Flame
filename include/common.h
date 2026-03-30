@@ -166,6 +166,10 @@ inline std::string op2string(token_type a) {
     op = " | ";
   if (a == AND_B)
     op = " & ";
+  if (a == SHIFT_L)
+    op = " << ";
+  if (a == SHIFT_R)
+    op = " >> ";
   return op;
 }
 

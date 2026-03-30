@@ -67,6 +67,14 @@ std::string BinaryNode::gen(generator &g)
         g.column = op.column;
         throw TranspileTimeError(err.c_str());
     }
+    if (float_ && (op.type == SHIFT_R||op.type==SHIFT_L))
+    {
+        std::string err = "Cannot shift for floats, use fshiftl/fshiftr from stdlib instead:\n\t";
+        err += res + '\n';
+        g.line = op.line;
+        g.column = op.column;
+        throw TranspileTimeError(err.c_str());
+    }
     else if (string_to_int_op)
     {
         std::string err = "Cannot do math with string and integer:\n\t";

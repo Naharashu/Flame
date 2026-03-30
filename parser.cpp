@@ -383,16 +383,31 @@ astptr parser::parse_use()
     return std::make_unique<ModuleNode>(std::move(module), mname);
 }
 
-astptr parser::parse_comparison()
+astptr parser::parse_shift()
 {
     astptr node = parse_expr();
+    while (true)
+    {
+        token op = peek();
+        if (op.type != SHIFT_R && op.type != SHIFT_L)
+            break;
+        consume();
+        astptr rhs = parse_expr();
+        node = std::make_unique<CondNode>(std::move(node), std::move(rhs), op.type);
+    }
+    return node;
+}
+
+astptr parser::parse_comparison()
+{
+    astptr node = parse_shift();
     while (true)
     {
         token op = peek();
         if (op.type != LESS && op.type != BIGGER && op.type != LEQUAL && op.type != BEQUAL)
             break;
         consume();
-        astptr rhs = parse_expr();
+        astptr rhs = parse_shift();
         node = std::make_unique<CondNode>(std::move(node), std::move(rhs), op.type);
     }
     return node;
