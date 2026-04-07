@@ -9,6 +9,7 @@ func swap(ref i32 a, ref i32 b) void {
 
 struct cool {
     i32 x=0;
+    vec i32 a=[1];
     func inc(i32 i) void {
         x+=i;
         return;
@@ -23,6 +24,10 @@ func main() i32 {
     print(f); // should be -2
     cool a;
     a.inc(1);
-    print(a.x);
+    print(a.a[0]);
+    i32* c=1;
+    print(c);
+    free(c);
+    // print(c); that gives use-after-free error
     return 0;
 }

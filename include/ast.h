@@ -52,7 +52,8 @@ public:
 class Node : public ASTNode {
 public:
   token tok;
-  explicit Node(const token& t) : tok(t) { kind = ast_type::JUSTNODE; line=tok.line; column=tok.column;};
+  bool isptr;
+  explicit Node(const token& t, bool is_ptr=false) : tok(t), isptr(is_ptr) { kind = ast_type::JUSTNODE; line=tok.line; column=tok.column;};
   std::string gen(generator &g) override;
 };
 
@@ -144,8 +145,9 @@ public:
   astptr val;
   bool is_const;
   std::string struct_id;
-  AssignmentNodeExpr(const token_type &t_, const std::string &id_, astptr val_, bool isconst=false, const std::string &s="")
-      : type_(t_), id(id_), val(std::move(val_)), is_const(isconst), struct_id(s) {
+  bool is_ptr;
+  AssignmentNodeExpr(const token_type &t_, const std::string &id_, astptr val_, bool isconst=false, const std::string &s="", bool isptr=false)
+      : type_(t_), id(id_), val(std::move(val_)), is_const(isconst), struct_id(s), is_ptr(isptr) {
     kind = ast_type::DEFINEVAR;
   };
 

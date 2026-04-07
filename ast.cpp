@@ -15,6 +15,7 @@ std::string Node::gen(generator &g)
         if(var.comptime&&var.type==STRING_TYPE) return variant2string(var.value);
         if(var.comptime&&(var.type==FLOAT_TYPE)) return std::to_string(variant2float(var.value));
         if(var.comptime&&(var.type==DOUBLE_TYPE)) return std::to_string(variant2double(var.value));
+        if(isptr) return "*" + tok.str_value;
     }
     return variant2value(tok);
 }
@@ -101,40 +102,44 @@ std::string AssignmentNode::gen(generator &g)
 std::string AssignmentNodeExpr::gen(generator &g)
 {
     std::string type;
-    if(is_const) type += "const ";
+    std::string const_="";
+    if(is_const) const_ = "const ";
     std::string nullval = "0";
     if (type_ == BYTE_TYPE)
-        type += "int8_t ";
+        type += "int8_t";
     if (type_ == WORD_TYPE)
-        type += "int16_t ";
+        type += "int16_t";
     if (type_ == INT_TYPE)
-        type += "int32_t ";
+        type += "int32_t";
     if (type_ == LONG_TYPE)
-        type += "int64_t ";
+        type += "int64_t";
     if (type_ == FLOAT_TYPE)
-        type += "float ";
+        type += "float";
     if (type_ == DOUBLE_TYPE)
-        type += "double ";
+        type += "double";
     if (type_ == STRING_TYPE)
     {
-        type += "std::string ";
+        type += "std::string";
         nullval = "\"\"";
     }
     if (type_ == BOOL_TYPE)
-        type += "bool ";
+        type += "bool";
     if (type_ == UNSIGNED_8_TYPE)
-        type += "uint8_t ";
+        type += "uint8_t";
     if (type_ == UNSIGNED_16_TYPE)
-        type += "uint16_t ";
+        type += "uint16_t";
     if (type_ == UNSIGNED_32_TYPE)
-        type += "uint32_t ";
+        type += "uint32_t";
     if (type_ == UNSIGNED_64_TYPE)
-        type += "uint64_t ";
+        type += "uint64_t";
     if (type_ == AUTO_TYPE)
-        type += "auto ";
-    if (struct_id!="")
-        return struct_id + " " + id;
-    return type + id + (val ? "=" + g.gencode(val) : "=" + nullval);
+        type += "auto";
+    type += struct_id;
+    if(is_ptr) {
+        return type + "* " + id + "=" + "new " + type + "(" + g.gencode(val) + ")";
+    }
+    if(struct_id!="") return type + " " + id;
+    return const_ + type + ' ' + id + (val ? "=" + g.gencode(val) : "=" + nullval);
 }
 
 std::string UnaryNode::gen(generator &g)
@@ -172,6 +177,12 @@ std::string FuncCallNode::gen(generator &g)
     {
         args_ = "sizeof(";
         args_ += g.gencode(args.at(0)) + ')';
+        return args_;
+    }
+    if (id == "free")
+    {
+        args_ = "delete ";
+        args_ += g.gencode(args.at(0));
         return args_;
     }
     for (u64 i = 0; i < args.size(); i++)
@@ -239,6 +250,13 @@ std::string FuncNode::gen(generator &g)
     code << ") ";
     code << g.gencode(block);
     code << '\n';
+    for(auto &x : notfreed_list) {
+        if(x!="") {
+            g.line = id.line;
+            g.column = id.column;
+            throw TranspileTimeError("\tPointer '" + x + "' is not freed(free(" + x + "))\n");
+        }
+    }
     return code.str();
 }
 

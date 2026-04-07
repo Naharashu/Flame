@@ -14,6 +14,7 @@ using symbol = struct symbol {
     bool comptime=false;
     std::string name="";
     bool is_vector=false;
+    bool is_ptr=false;
 };
 
 using fsymbol = struct fsymbol {
@@ -24,6 +25,8 @@ using fsymbol = struct fsymbol {
 };
 
 extern std::vector<std::string> struct_list;
+extern std::vector<std::string> freed_list;
+extern std::vector<std::string> notfreed_list;
 extern std::vector<std::unordered_map<std::string, symbol>> table;
 extern std::unordered_map<std::string, fsymbol> ftable;
 
@@ -37,8 +40,8 @@ token_type search_type(const std::string &name);
 token_type search_type_scope(const std::string &name, unsigned int lvl);
 
 
-void insert(const std::string &name,token_type type, token_value val, bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false, bool is_vector=false);
-void insert_top(const std::string &name,token_type type, token_value val,bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false, bool is_vector=false);
+void insert(const std::string &name,token_type type, token_value val, bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false, bool is_vector=false, bool isptr=false);
+void insert_top(const std::string &name,token_type type, token_value val,bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false, bool is_vector=false, bool isptr=false);
 
 bool exist(const std::string &name);
 

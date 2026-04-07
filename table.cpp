@@ -5,6 +5,8 @@
 #include <utility>
 
 std::vector<std::string> struct_list;
+std::vector<std::string> freed_list;
+std::vector<std::string> notfreed_list;
 std::vector<std::unordered_map<std::string, symbol>> table;
 std::unordered_map<std::string, fsymbol> ftable;
 
@@ -50,14 +52,14 @@ token_type search_type_scope(const std::string &name, unsigned int lvl) {
     return EOF_;
 }
 
-void insert(const std::string &name,token_type type, token_value val, bool is_const, u64 size, bool is_array, bool comptime, bool is_vector) {
+void insert(const std::string &name,token_type type, token_value val, bool is_const, u64 size, bool is_array, bool comptime, bool is_vector, bool isptr) {
     if(table.empty()) return;
-    table[table.size()-1].insert_or_assign(name, symbol{type, std::move(val), is_const, size, is_array, comptime,"", is_vector});
+    table[table.size()-1].insert_or_assign(name, symbol{type, std::move(val), is_const, size, is_array, comptime,"", is_vector, isptr});
 }
 
-void insert_top(const std::string &name,token_type type,token_value val, bool is_const, u64 size,bool is_array, bool comptime, bool is_vector) {
+void insert_top(const std::string &name,token_type type,token_value val, bool is_const, u64 size,bool is_array, bool comptime, bool is_vector, bool isptr) {
     if(table.empty()) return;
-    table[0].insert_or_assign(name, symbol{type, std::move(val), is_const, size, is_array, comptime,"", is_vector});
+    table[0].insert_or_assign(name, symbol{type, std::move(val), is_const, size, is_array, comptime,"", is_vector, isptr});
 }
 
 bool exist(const std::string &name) {
