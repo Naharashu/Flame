@@ -136,7 +136,8 @@ std::string AssignmentNodeExpr::gen(generator &g)
         type += "auto";
     type += struct_id;
     if(is_ptr) {
-        return type + "* " + id + "=" + "new " + type + "(" + g.gencode(val) + ")";
+        if(val) return type + "* " + id + "=" + "new " + type + "(" + g.gencode(val) + ")";
+        else return type + "* " + id + "=" + "new " + type;
     }
     if(struct_id!="") return type + " " + id;
     return const_ + type + ' ' + id + (val ? "=" + g.gencode(val) : "=" + nullval);
@@ -468,6 +469,8 @@ std::string ModuleNode::gen(generator &g)
 
 std::string MethodNode::gen(generator &g) {
     std::string code = parent;
+    unsigned long i = 0;
+    std::string accessor = isptr ? "->" : ".";
     for(auto &x : children) {
         if(type==VEC) {
             if(x->kind==ast_type::FuncCall) {
@@ -485,7 +488,9 @@ std::string MethodNode::gen(generator &g) {
                 }
             }
         }
-        code += '.' + g.gencode(x);
+        code += accessor + g.gencode(x);
+        accessor = (i < isptrs.size() && isptrs[i]) ? "->" : ".";
+        i++;
     }
     return code;
 }

@@ -854,10 +854,15 @@ astptr parser::parse_assignment(bool is_const, bool comptime, const std::string 
     if (is_struct(peek().str_value))
     {
         token struct_id = consume(ID);
+        bool isptr = false;
+        if(peek().type==STAR) {
+            isptr = true;
+            consume(STAR);
+        }
         token id = consume(ID);
         consume(SEMI);
-        insert(id.str_value, STRUCT, struct_id.str_value);
-        return std::make_unique<AssignmentNodeExpr>(STRUCT, id.str_value, astptr{}, is_const, struct_id.str_value);
+        insert(id.str_value, STRUCT, struct_id.str_value, false, 1, false, false, false, isptr);
+        return std::make_unique<AssignmentNodeExpr>(STRUCT, id.str_value, astptr{}, is_const, struct_id.str_value, isptr);
     }
     if (peek().type == VEC)
         return parse_vector(is_const, struct_ + '.');
@@ -893,7 +898,7 @@ astptr parser::parse_assignment(bool is_const, bool comptime, const std::string 
         }
     }
     if (is_it_type(peek()) && peek(1).type == L_SQ_BRACKET)
-        return parse_array(is_const, struct_ + '.');
+        return parse_array(is_const, struct_);
     token type = consume();
     if (type.type == ID)
     {
@@ -972,6 +977,11 @@ astptr parser::parse_assignment(bool is_const, bool comptime, const std::string 
             parser::column = id.column;
             throw ParseTimeError("\tVariable '" + id_value + "' is compile time value'\n");
         }
+        if(peek().type==SEMI) {
+            consume(SEMI);
+            insert(struct_ + id.str_value, type.type, nothing{}, is_const, 1, false, false,false,true);
+            return std::make_unique<AssignmentNodeExpr>(type.type, id.str_value, astptr{}, is_const, "", true);        
+        }
         consume(EQ);
         astptr value = parse_factor();
         consume(SEMI);
@@ -1027,7 +1037,10 @@ astptr parser::parse_method()
         throw ParseTimeError("\tUse undeclared variable '" + parent.str_value + "'\n");
     }
     symbol var = search(parent.str_value);
+    bool isptr = false;
+    if(var.is_ptr) isptr = true; 
     std::vector<astptr> children;
+    std::vector<bool> isptrs;    
 
     while (peek().type == DOT)
     {
@@ -1039,6 +1052,7 @@ astptr parser::parse_method()
             parser::column = child.column;
             throw ParseTimeError("\tUse undeclared variable '" + child.str_value + "'\n");
         }
+        isptrs.push_back(search(variant2string(search(parent.str_value).value) + child.str_value).is_ptr);
         if (peek().type == L_BRACKET)
         {
             consume(L_BRACKET);
@@ -1124,10 +1138,10 @@ astptr parser::parse_method()
         }
     }
     if (var.is_vector)
-        return std::make_unique<MethodNode>(std::move(children), parent.str_value, VEC);
+        return std::make_unique<MethodNode>(std::move(children), isptrs, parent.str_value, VEC, isptr);
     if (peek().type == SEMI)
         consume(SEMI);
-    return std::make_unique<MethodNode>(std::move(children), parent.str_value, search_type(parent.str_value));
+    return std::make_unique<MethodNode>(std::move(children), isptrs, parent.str_value, search_type(parent.str_value), isptr);
 }
 
 astptr parser::parse_vector(bool is_const, const std::string &struct_)

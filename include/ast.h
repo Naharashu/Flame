@@ -337,9 +337,11 @@ class NamespaceAccessNode : public ASTNode {
 class MethodNode : public ASTNode {
   public:
   std::vector<astptr> children;
+  std::vector<bool> isptrs;
   token_type type;
   std::string parent;
-  MethodNode(std::vector<astptr> m,const std::string &name, const token_type &t) : children(std::move(m)), type(t), parent(name) { //kind = ast_type::MODULE;
+  bool isptr;
+  MethodNode(std::vector<astptr> m, const std::vector<bool> &ptrs, const std::string &name, const token_type &t, bool isp=false) : children(std::move(m)), isptrs(ptrs), type(t), parent(name), isptr(isp) { //kind = ast_type::MODULE;
      }
 
   void print() const override {}
