@@ -91,12 +91,14 @@ int main(int argc, char* argv[]) {
             });
         }
 
+		std::string files = "";
         for(auto &x : src) {
             if(!std::filesystem::exists(x)) {
                 std::cerr << termcolor::red << "Error \n" << termcolor::reset <<
                 "\n> Cannot find '" << x << "' in current directory. Check if path is correct.\n";
                 return 1;
             }
+            files += " " + x;
         }
         if(name=="") {
             std::cerr << termcolor::yellow << "Warning \n" << termcolor::reset <<
@@ -109,6 +111,16 @@ int main(int argc, char* argv[]) {
 
         std::string cxx = t["cxx"].value_or("g++");
         std::string cxxflags = t["cxxflags"].value_or("-g -O1");
+        std::string ld = t["ld"].value_or("ld");
+
+		std::string cmd_="flame -C";
+        for(auto &x : src) {
+        	cmd_ += x;
+        }
+        std::system(cmd_.c_str());
+
+  		std::string cmd = cxx + " " + cxxflags + " " + files;
+  		std::cout << cmd << '\n';
     }
     return 0;
 }
