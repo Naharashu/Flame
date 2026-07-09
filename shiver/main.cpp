@@ -4,6 +4,7 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <sstream>
 #include <termcolor/termcolor.hpp>
 
 int main(int argc, char* argv[]) {
@@ -92,13 +93,16 @@ int main(int argc, char* argv[]) {
         }
 
 		std::vector<std::string> files;
+        std::filesystem::create_directory("./build");
         for(auto &x : src) {
             for(auto &y : std::filesystem::recursive_directory_iterator(x)) {
                 if(y.path().extension() == ".flame") {
                     const std::string n = y.path().stem();
-                    files.emplace_back(n);
-                    files.emplace_back(n);
-                    std::string cmd_ = "flame -C"; cmd_ += y.path().filename(); cmd_ += "-o " + n;
+                    const std::string name = y.path().filename();
+                    files.emplace_back(n+"_flame");
+                    std::string cmd_ = "flame -C "; cmd_ += x + '/' + name; cmd_ += " -o ./build/" + n;
+                    std::cout << "Compiling " << termcolor::bright_yellow << x << '/' <<  name << termcolor::reset
+                    << " into C++...\n";
                     std::system(cmd_.c_str());
                 }
             }
@@ -122,16 +126,20 @@ int main(int argc, char* argv[]) {
         std::string ld = t["ld"].value_or("ld");
         std::string output = t["output"].value_or("test");
 
-  		std::filesystem::create_directory("./build");
+  		
         std::string final = "";
         for(auto &x : files) {
-            final += x + ".o";
-            const std::string cmd = cxx + ' ' + cxxflags + ' ' + x + ".cpp -o ./build/" + x + ".o";
-
-            std::system(cmd.c_str());
+            final += "./build/" + x + ".o";
+            std::ostringstream cmd;
+            cmd << cxx << " -c " << cxxflags << " ./build/" << x << ".cpp -o ./build/" << x << ".o";
+            std::cout << "Compiling " << termcolor::bright_yellow << x << termcolor::reset
+            << " into object file...\n";
+            std::system(cmd.str().c_str());
         }
-        std::string cmd__ = ld + final + output;
-        std::system(cmd__.c_str());
+        std::ostringstream cmd;
+        cmd << cxx << ' ' << final << " -o " << output;
+        std::cout << "Linking files together..." << termcolor::green << "Done\n" << termcolor::reset;
+        std::system(cmd.str().c_str());
     }
     return 0;
 }

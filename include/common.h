@@ -2,6 +2,7 @@
 
 #include "lexer.h"
 #include <limits>
+#include <string>
 
 typedef unsigned long long u64;
 typedef long long i64;
@@ -21,6 +22,10 @@ template <typename T> inline long long variant2int(const token_value &val) {
 
 inline double variant2float(const token_value &val) {
   return std::get<float>(val);
+}
+
+inline std::string variant2char(const token_value &val) {
+  return std::to_string((std::get<char>(val)));
 }
 
 inline double variant2double(const token_value &val) {
@@ -100,6 +105,7 @@ inline bool is_literal(token_type t) {
   case TRUE:
   case FALSE:
   case STRING:
+  case CHAR:
     return true;
   default:
     return false;
@@ -191,6 +197,9 @@ inline std::string variant2value(token tok) {
     return std::to_string(variant2double(tok.value));
   if (tok.type == STRING)
     return "\"" + variant2string(tok.value) + "\"";
+  if (tok.type == CHAR) {
+    return "\'" + variant2char(tok.value) + "\'";
+  }
   if (tok.type == TRUE || tok.type == FALSE)
     return std::to_string(variant2bool(tok.value));
   if (tok.type == NULL_)

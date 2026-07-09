@@ -22,7 +22,7 @@ astptr parser::parse_factor()
     if (tok.type == token_type::BYTE || tok.type == token_type::WORD || tok.type == token_type::INT ||
         tok.type == token_type::LONG || tok.type == token_type::UNSIGNED || tok.type == token_type::NULL_ ||
         tok.type == token_type::FLOAT || tok.type == token_type::DOUBLE || tok.type == token_type::TRUE ||
-        tok.type == token_type::FALSE || tok.type == token_type::VOID_TYPE || tok.type == token_type::STRING)
+        tok.type == token_type::FALSE || tok.type == token_type::VOID_TYPE || tok.type == token_type::STRING || tok.type == token_type::CHAR)
     {
         return std::make_unique<Node>(tok);
     }
@@ -386,10 +386,6 @@ astptr parser::parse_use()
         std::vector<astptr> module;
         try
         {
-            insert("print", FUNC, nothing{}, true);
-            insert("input", FUNC, nothing{}, true);
-            insert("sizeof", FUNC, nothing{}, true);
-            insert("free", FUNC, nothing{}, true);
             while (p.peek().type != token_type::EOF_)
             {
                 module.push_back(p.parse_statement());
@@ -419,10 +415,6 @@ astptr parser::parse_use()
     parser p(toks, name);
     p.is_module = true; // tells later to table that we parsing module
     std::vector<astptr> module;
-    insert("print", FUNC, nothing{}, true);
-    insert("input", FUNC, nothing{}, true);
-    insert("sizeof", FUNC, nothing{}, true);
-    insert("free", FUNC, nothing{}, true);
     while (p.peek().type != token_type::EOF_)
     {
         try
@@ -1352,6 +1344,8 @@ astptr parser::parse_statement()
     token tok = peek();
     if (tok.type == ID && peek(1).type == DOT)
         return parse_method();
+    if (tok.type == ID && peek(1).type == L_BRACKET)
+        return parse_factor();
     switch (tok.type)
     {
     case token_type::IF:
@@ -1406,10 +1400,10 @@ astptr parser::parse_statement()
 std::vector<std::unique_ptr<ASTNode>> parser::parse()
 {
     table.emplace_back();
-    insert("print", FUNC, nothing{}, true);
-    insert("input", FUNC, nothing{}, true);
-    insert("sizeof", FUNC, nothing{}, true);
-    insert("free", FUNC, nothing{}, true);
+    insert("print", FUNC, nothing{}, false);
+    insert("input", FUNC, nothing{}, false);
+    insert("sizeof", FUNC, nothing{}, false);
+    insert("free", FUNC, nothing{}, false);
     std::vector<std::unique_ptr<ASTNode>> parsed;
     while (peek().type != token_type::EOF_)
     {

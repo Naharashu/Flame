@@ -59,26 +59,12 @@ double fshiftl(double a, int8_t n)  {
     return (a * pow(2, n));
 }
 
-}
-void printw(std::string s)  {
-    std::cout << s;
+void println(std::string  &s)  {
 }
 
-struct point {
-    int32_t x=0;
-    int32_t y=0;
-    void inc()  {
-        x++;
-    }
-;
-};
+}
 int32_t main()  {
-    printw("hi");
-    point p;
-    p.x=3;
-    float x=-2;
-    x=stdlib::PI;
-    std::cout << x;
+    std::cout << "hii\n" ;
     return 0;
 }
 

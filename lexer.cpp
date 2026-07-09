@@ -51,7 +51,7 @@ std::vector<token> lexer::lex(std::string src) {
         while(i<src.size()&&src.at(i)!='\n') i++;
         l++;
         col=0;
-        break;
+        continue;
       }
       if(next == '*') {
         i+=2;
@@ -63,7 +63,7 @@ std::vector<token> lexer::lex(std::string src) {
           i++;
         }
         i++;
-        break;
+        continue;
       }
       lexed.push_back(create_token(SLASH, nothing{}, l, col));
       break;
@@ -261,10 +261,19 @@ std::vector<token> lexer::lex(std::string src) {
 
       continue;
     }
-    if (c == '"') {
-      i++;
+    if (c == '"'|| c == '\'') {
       std::string str;
+      bool char_mode = c == '\'';
+      
+      if(i+1 < src.size() && char_mode) {
+        char charr = src[i+1];
+        i+=3; // 'c'
+        lexed.push_back(create_token(CHAR, charr, l, col));
+        continue;
+      }
+      i++;
       while (i < src.size() && src[i] != '"') {
+        /*
         if (src[i] == '\\' && i + 1 < src.size()) {
           i++;
           switch (src[i]) {
@@ -284,9 +293,9 @@ std::vector<token> lexer::lex(std::string src) {
             str += src[i];
             break;
           }
-        } else {
+        } else {*/
           str += src[i];
-        }
+        //}
         i++;
       }
       if (i == src.size()) {
@@ -294,6 +303,7 @@ std::vector<token> lexer::lex(std::string src) {
         exit(1);
       }
       i++;
+      std::cout << str << '\n';
       lexed.push_back(create_token(STRING, str, l, col));
       continue;
     }

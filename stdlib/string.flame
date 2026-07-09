@@ -1,0 +1,10 @@
+// String lib v1.0 by Naharashu (29.07.26)
+// MIT License
+
+func len(string s) u32 {
+    u32 len = 0;
+    while(s[len]!=0) {
+        len++;
+    }
+    return len;
+}

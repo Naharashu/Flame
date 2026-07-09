@@ -12,7 +12,7 @@ bool error_exit = false;
 int main(int argc, char *argv[]) {
   if (argc > 1) {
     if (strcmp(argv[1], "-v") == 0) {
-      std::cout << "Flame compiler 0.7\nBy Naharashu\n";
+      std::cout << "Flame compiler 0.9.1\nBy Naharashu\n";
       return 0;
     }
     if (strcmp(argv[1], "-h") == 0) {
@@ -20,9 +20,9 @@ int main(int argc, char *argv[]) {
       std::cout << "-v - version of compiler\n";
       std::cout << "-C - generate only C++ code\n";
       std::cout << "-lexer-debug - output lexed tokens\n";
-      std::cout << "-O3 - generate C++ with -O3\n";
+      std::cout << "-O2 - generate C++ with -O2\n";
       std::cout << "-O0 - generate C++ with -O0\n";
-      std::cout << "-O4 - generate C++ with -O3, -funroll-loops and -march=native\n";
+      std::cout << "-O3 - generate C++ with -O3, -funroll-loops and -march=native\n";
       return 0;
     }
   }
@@ -32,19 +32,29 @@ int main(int argc, char *argv[]) {
   bool fast_code = false;
   bool super_fast_code = false;
   bool slow_code = false;
-  for (int i = 0; i < argc; i++) {
+  std::string filename = "";
+  for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "-C") == 0)
       compile_into_bin = false;
-    if (strcmp(argv[i], "-o") == 0)
+    else if (strcmp(argv[i], "-o") == 0) {
       out_name = argc > i + 1 ? argv[i + 1] : "out";
-    if (strcmp(argv[i], "-lexer-debug") == 0)
+      i++;
+    }
+    else if (strcmp(argv[i], "-lexer-debug") == 0)
       lexer_output = true;
-    if (strcmp(argv[i], "-O2") == 0)
+    else if (strcmp(argv[i], "-O2") == 0)
       fast_code = true;
-    if (strcmp(argv[i], "-O0") == 0)
+    else if (strcmp(argv[i], "-O0") == 0)
       slow_code = true;
-    if (strcmp(argv[i], "-O3") == 0)
+    else if (strcmp(argv[i], "-O3") == 0)
       super_fast_code = true;
+    else if(filename=="") {
+      filename = argv[i];
+    }
+    else {
+      std::cerr << "Unknown argument '" << argv[i] << "'\n";
+      return 1;
+    }
   }
   lexer lex;
   std::string code;
@@ -55,8 +65,11 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   std::string line;
-  const char* filename = argv[1];
   std::ifstream file(filename);
+  if(!file) {
+    std::cerr << "Input file doenst exist: " << filename << '\n';
+    return 1;
+  }
   while (std::getline(file, line)) {
     code += line + '\n';
   }
@@ -87,7 +100,8 @@ int main(int argc, char *argv[]) {
     std::cout << "\x1b[0;35m" << filename << ':' << gen.line << ':' << gen.column << ": \x1b[31m error\n" <<  e.what() << "\x1b[0m";
     return 1;
   }
-  std::ofstream out("temp_flame.cpp", std::ios::out | std::ios::binary);
+  const std::string genname = out_name + "_flame.cpp";
+  std::ofstream out(genname, std::ios::out | std::ios::binary);
   if (!out.is_open()) {
     std::cerr << "E: Cannot open temp file to generate cpp code\n";
     return 1;
@@ -99,9 +113,9 @@ int main(int argc, char *argv[]) {
     cleanup += out_name;
     system(cleanup.c_str());
     std::string output;
-    if(slow_code) output = "g++ -O0 temp_flame.cpp -o " + out_name;
-    else if(super_fast_code) output = "g++ -O3 -funroll-loops -march=native temp_flame.cpp -o " + out_name;
-    else output = !fast_code ? "g++ temp_flame.cpp -o " + out_name : "g++ -O2 temp_flame.cpp -o " + out_name;
+    if(slow_code) output = "g++ -O0 " + genname +" -o " + out_name;
+    else if(super_fast_code) output = "g++ -O3 -funroll-loops -march=native " + genname +" -o " + out_name;
+    else output = !fast_code ? "g++ " + genname +" -o " + out_name : "g++ -O2 " + genname + " -o " + out_name;
     system(output.c_str());
   }
   // std::cout << code_ << std::endl;
