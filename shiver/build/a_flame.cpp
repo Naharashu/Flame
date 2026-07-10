@@ -59,12 +59,90 @@ double fshiftl(double a, int8_t n)  {
     return (a * pow(2, n));
 }
 
-void println(std::string  &s)  {
+void println()  {
+    std::cout << "\n";
+    return;
 }
 
 }
+namespace strings {
+#include <iostream>
+#include <cstdint>
+#include <array>
+#include <vector>
+uint32_t len(std::string s)  {
+    uint32_t len=0;
+    while((s[len] != 0))  {
+        len++;
+    };
+    return len;
+}
+
+std::string concat(std::string s1, std::string s2)  {
+    std::string s3=s1;
+    s3 += s2;
+    return s3;
+}
+
+std::string reversed(std::string s)  {
+    uint32_t size=len(s);
+    std::string rev="";
+     for(int32_t i=(size - 1);(i >= 0);i--) {
+        rev += s[i];
+    };
+    return rev;
+}
+
+std::string substr(std::string s, int64_t start, int64_t length)  {
+    uint32_t size=len(s);
+    if((((start < 0) || (length < 0)) || ((start + length) > size))) {
+        return "";
+    };
+    if(((start == 0) && (length == size))) {
+        return s;
+    };
+    std::string sub="";
+     for(uint64_t i=start;(i < (start + length));i++) {
+        sub += s[i];
+    };
+    return sub;
+}
+
+int64_t indexOf(std::string s, std::string sub)  {
+    uint32_t size=len(s);
+    uint32_t ssize=len(sub);
+    if(((size == 0) || (size < ssize))) {
+        return -1;
+    };
+     for(uint64_t i=0;(i < size);i++) {
+        bool match=1;
+         for(uint64_t j=0;(j < ssize);j++) {
+            if((s[i] != sub[j])) {
+                match=0;
+                break;
+            };
+        };
+        if(match) {
+            return i;
+        };
+    };
+    return -1;
+}
+
+bool contains(std::string s, std::string sub)  {
+    bool cont=(indexOf(s, sub) != -1);
+    return cont;
+}
+
+}
+void test(std::string s)  {
+    s += "a";
+}
+
 int32_t main()  {
-    std::cout << "hii\n" ;
+    std::string ass="Hello world";
+    std::cout << strings::contains(ass, "world");
+    std::cout << (ass + 3);
     return 0;
 }
 

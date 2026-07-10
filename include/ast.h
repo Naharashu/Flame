@@ -147,8 +147,9 @@ public:
   bool is_const;
   std::string struct_id;
   bool is_ptr;
-  AssignmentNodeExpr(const token_type &t_, const std::string &id_, astptr val_, bool isconst=false, const std::string &s="", bool isptr=false)
-      : type_(t_), id(id_), val(std::move(val_)), is_const(isconst), struct_id(s), is_ptr(isptr) {
+  bool is_ref=false;
+  AssignmentNodeExpr(const token_type &t_, const std::string &id_, astptr val_, bool isconst=false, const std::string &s="", bool isptr=false, bool isref=false)
+      : type_(t_), id(id_), val(std::move(val_)), is_const(isconst), struct_id(s), is_ptr(isptr), is_ref(isref) {
     kind = ast_type::DEFINEVAR;
   };
 

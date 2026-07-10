@@ -303,7 +303,6 @@ std::vector<token> lexer::lex(std::string src) {
         exit(1);
       }
       i++;
-      std::cout << str << '\n';
       lexed.push_back(create_token(STRING, str, l, col));
       continue;
     }

@@ -57,5 +57,3 @@ func println() void {
     print("\n");
     return;
 }
-
-

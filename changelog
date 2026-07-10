@@ -1,0 +1,13 @@
+Flame 0.9.0:
+    - new module - strings
+    - string concatation with += or strings.concat(s1, s2)
+    - new module system
+    - borrow checker:
+        - one owner:
+            i32* a = 3;
+            i32* b = a;
+            print(a); // <- a no longer exist, its moved to b
+        - ref is readonly:
+            i32* a = 3;
+            i32* a = ref a; // <- readonly
+        

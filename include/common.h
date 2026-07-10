@@ -86,11 +86,48 @@ inline bool is_it_type(const token &a) {
   }
 }
 
+inline bool is_it_int_type(const token_type &t) {
+  switch (t) {
+  case BYTE_TYPE:
+  case WORD_TYPE:
+  case INT_TYPE:
+  case LONG_TYPE:
+  case FLOAT_TYPE:
+  case DOUBLE_TYPE:
+  case UNSIGNED_8_TYPE:
+  case UNSIGNED_16_TYPE:
+  case UNSIGNED_32_TYPE:
+  case UNSIGNED_64_TYPE:
+    return true;
+  default:
+    return false;
+  }
+}
+
 inline bool is_it_logical(token_type a) {
   if (a != BIGGER && a != BEQUAL && a != LEQUAL && a != LESS && a != EQUAL &&
       a != NEQUAL && a != AND && a != OR)
     return false;
   return true;
+}
+
+inline bool is_it_op(token_type a) {
+  if(is_it_logical(a)) return true;
+  switch(a) {
+    case PLUS:
+    case MINUS:
+    case SLASH:
+    case STAR:
+    case MOD:
+    case XOR:
+    case SHIFT_L:
+    case SHIFT_R:
+    case OR_B:
+    case AND_B:
+      return true;
+    default:
+      return false;
+  }
 }
 
 inline bool is_literal(token_type t) {

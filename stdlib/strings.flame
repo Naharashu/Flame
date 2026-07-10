@@ -1,0 +1,70 @@
+// String lib v1.0 by Naharashu (10.07.26)
+// MIT License
+
+func len(string s) u32 {
+    u32 len = 0;
+    while(s[len]!=0) {
+        len++;
+    }
+    return len;
+}
+
+func concat(string s1, string s2) string {
+    string s3 = s1;
+    s3 += s2;
+    return s3;
+}
+
+func reversed(string s) string {
+    u32 size = len(s);
+    string rev;
+    for(i32 i=size-1;i>=0;i--) {
+        rev += s[i];
+    }
+    return rev;
+}
+
+func substr(string s, i64 start, i64 length) string {
+    u32 size = len(s);
+    if(start<0||length<0||start+length>size) {
+        return "";
+    }
+    if(start==0&&length==size) {
+        return s;
+    }
+
+    string sub;
+    for(u64 i=start;i<start+length;i++) {
+        sub += s[i];
+    }
+    return sub;
+}
+
+func indexOf(string s, string sub) i64 {
+    u32 size = len(s);
+    u32 ssize = len(sub);
+
+    if(size==0||size<ssize) {
+        return -1;
+    }
+
+    for(u64 i=0;i<size;i++) {
+        bool match = true;
+        for(u64 j=0;j<ssize;j++) {
+            if(s[i]!=sub[j]) {
+                match = false;
+                break;
+            }
+        }
+        if(match) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+func contains(string s, string sub) bool {
+    bool cont = indexOf(s, sub) != -1;
+    return cont;
+}

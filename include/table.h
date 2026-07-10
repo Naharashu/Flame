@@ -15,6 +15,8 @@ using symbol = struct symbol {
     std::string name="";
     bool is_vector=false;
     bool is_ptr=false;
+    bool is_moved=false;
+    bool is_ref=false;
     std::string module_name = "";
 };
 
@@ -56,7 +58,7 @@ token_type search_type(const std::string &name);
 token_type search_type_scope(const std::string &name, unsigned int lvl);
 
 
-void insert(const std::string &name,token_type type, token_value val, bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false, bool is_vector=false, bool isptr=false, const std::string &modname="");
+void insert(const std::string &name,token_type type, token_value val, bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false, bool is_vector=false, bool isptr=false, const std::string &modname="", bool ismov=false, bool isref=false);
 void insert_top(const std::string &name,token_type type, token_value val,bool is_const=false, u64 size=1, bool is_array=false, bool comptime=false, bool is_vector=false, bool isptr=false, const std::string modname="");
 
 bool exist(const std::string &name);

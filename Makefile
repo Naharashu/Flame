@@ -20,7 +20,7 @@ build/%.o: %.cpp
 install:
 	cp flame $(HOME_)/.local/bin/flame
 	mkdir -p $(HOME_)/.local/bin/flame_
-	cp -r stdlib/ $(HOME_)/.local/bin/flame_/
+	cp -r stdlib/. $(HOME_)/.local/bin/flame_/
 
 uninstall:
 	rm -f $(HOME_)/.local/bin/flame

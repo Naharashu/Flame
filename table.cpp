@@ -55,10 +55,9 @@ token_type search_type_scope(const std::string &name, unsigned int lvl) {
     return EOF_;
 }
 
-void insert(const std::string &name,token_type type, token_value val, bool is_const, u64 size, bool is_array, bool comptime, bool is_vector, bool isptr, const std::string &modname) {
+void insert(const std::string &name,token_type type, token_value val, bool is_const, u64 size, bool is_array, bool comptime, bool is_vector, bool isptr, const std::string &modname, bool ismov, bool isref) {
     if(table.empty()) [[unlikely]] return;
-    std::cout << modname << " " << name << '\n';
-    table[table.size()-1].insert_or_assign(name, symbol{type, std::move(val), is_const, size, is_array, comptime,"", is_vector, isptr, modname});
+    table[table.size()-1].insert_or_assign(name, symbol{type, std::move(val), is_const, size, is_array, comptime,"", is_vector, isptr, ismov, isref, modname});
 }
 
 void insert_top(const std::string &name,token_type type,token_value val, bool is_const, u64 size,bool is_array, bool comptime, bool is_vector, bool isptr, const std::string modname) {

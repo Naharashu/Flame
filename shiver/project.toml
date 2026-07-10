@@ -7,6 +7,6 @@ author = "me"
 github = "none"
 [build]
 cxx = "g++"
-cxxflags = "-O1"
+cxxflags = "-O0 -g"
 ld = "ld"
 src = ["testdir"]

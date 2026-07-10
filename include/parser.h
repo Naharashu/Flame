@@ -23,6 +23,9 @@ class ParseTimeError : public std::exception {
   }
 };
 
+
+
+
 class parser {
     public:
     std::vector<token> src;
@@ -39,6 +42,12 @@ class parser {
         filename = f;
     }
     bool returning=false;
+
+    inline void ParserError(const std::string &error, const token &tok) {
+        line = tok.line;
+        column = tok.column;
+        throw ParseTimeError(error);
+    }
 
     astptr parse_expr();
     astptr parse_shift();

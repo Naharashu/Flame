@@ -36,12 +36,12 @@ int main(int argc, char* argv[]) {
             f << "name = \"example\"\n";
             f << "version = \"1.0.0\"\n";
             f << "\n";
-            f << "output = \"example\"\n";
             f << "license = \"MIT\"\n";
             f << "author = \"cool guy\"\n";
             f << "github = \"https://github.com/\"\n";
 
             f << "[build]\n";
+            f << "output = \"example\"\n";
             f << "cxx = \"g++\"\n";
             f << "cxxflags = \"-g -O1 -Wall\"\n";
             f << "ld = \"ld\"\n";
@@ -53,9 +53,7 @@ int main(int argc, char* argv[]) {
             f << "name = \"" << temp << "\"\n";
             std::cout << termcolor::blue << "Project version: " << termcolor::reset; std::getline(std::cin >> std::ws, temp);
             f << "version = \"" << temp << "\"\n";
-            std::cout << termcolor::blue << "Project output file name: " << termcolor::reset; std::getline(std::cin >> std::ws, temp);
             f << "\n";
-            f << "output = \"" << temp << "\"\n";
             std::cout << termcolor::blue << "Project license[MIT, Apache2, GPL2, GPL3]: " << termcolor::reset; std::getline(std::cin >> std::ws, temp);
             f << "license = \"" << temp << "\"\n";
             std::cout << termcolor::blue << "Project author: " << termcolor::reset; std::getline(std::cin >> std::ws, temp);
@@ -68,8 +66,8 @@ int main(int argc, char* argv[]) {
             f << "cxx = \"" << temp << "\"\n";
             std::cout << termcolor::blue << "C++ flags: " << termcolor::reset; std::getline(std::cin >> std::ws, temp);
             f << "cxxflags = \"" << temp << "\"\n";
-            std::cout << termcolor::blue << "Linker: " << termcolor::reset; std::getline(std::cin >> std::ws, temp);
-            f << "ld = \"" << temp << "\"\n";
+            std::cout << termcolor::blue << "Output file name: " << termcolor::reset; std::getline(std::cin >> std::ws, temp);
+            f << "output = \"" << temp << "\"\n";
             std::cout << termcolor::green << "Done.\n" << termcolor::reset;
         }
         return 0;
@@ -84,26 +82,20 @@ int main(int argc, char* argv[]) {
         toml::table t = toml::parse_file("./project.toml");
         std::string name = t["name"].value_or("");
         std::string ver = t["version"].value_or("");
-        std::cout << "Running basic check...";
+        std::cout << "Running basic check...\n";
         std::vector<std::string> src;
         if (toml::array* arr = t["build"]["src"].as_array()) {
             arr->for_each([&src](auto&& e){
                 src.emplace_back(e.value_or(""));
             });
         }
-
+        bool error = false;
 		std::vector<std::string> files;
-        std::filesystem::create_directory("./build");
         for(auto &x : src) {
             for(auto &y : std::filesystem::recursive_directory_iterator(x)) {
                 if(y.path().extension() == ".flame") {
                     const std::string n = y.path().stem();
-                    const std::string name = y.path().filename();
                     files.emplace_back(n+"_flame");
-                    std::string cmd_ = "flame -C "; cmd_ += x + '/' + name; cmd_ += " -o ./build/" + n;
-                    std::cout << "Compiling " << termcolor::bright_yellow << x << '/' <<  name << termcolor::reset
-                    << " into C++...\n";
-                    std::system(cmd_.c_str());
                 }
             }
         }
@@ -117,18 +109,38 @@ int main(int argc, char* argv[]) {
             "\n> Name of project is not set.\n";
             name = "project";
         }
-        std::cout << termcolor::green << "OK\n\n" << termcolor::reset;
-
+        if(ver=="") {
+            std::cerr << termcolor::yellow << "Warning \n" << termcolor::reset <<
+            "\n> Version of project is not set.\n";
+            ver = "1.0.0";
+        }
         std::cout << "Starting building " << name << '@' << ver << "...\n";
+        std::filesystem::create_directory("./build");
+        for(auto &x : src) {
+            for(auto &y : std::filesystem::recursive_directory_iterator(x)) {
+                if(y.path().extension() == ".flame") {
+                    const std::string n = y.path().stem();
+                    const std::string name = y.path().filename();
+                    std::string cmd_ = "flame -C "; cmd_ += x + '/' + name; cmd_ += " -o ./build/" + n;
+                    std::cout << "Compiling " << termcolor::bright_yellow << x << '/' <<  name << termcolor::reset
+                    << " into C++...\n";
+                    int ret = std::system(cmd_.c_str());
+                    if(ret!=0) {
+                        error = true;
+                    }
+                }
+            }
+        }
 
-        std::string cxx = t["cxx"].value_or("g++");
-        std::string cxxflags = t["cxxflags"].value_or("-g -O1");
-        std::string ld = t["ld"].value_or("ld");
-        std::string output = t["output"].value_or("test");
+
+        std::string cxx = t["build"]["cxx"].value_or("g++");
+        std::string cxxflags = t["build"]["cxxflags"].value_or("-g -O1");
+        std::string output = t["build"]["output"].value_or("test");
 
   		
         std::string final = "";
         for(auto &x : files) {
+            if(error) break;
             final += "./build/" + x + ".o";
             std::ostringstream cmd;
             cmd << cxx << " -c " << cxxflags << " ./build/" << x << ".cpp -o ./build/" << x << ".o";
@@ -138,8 +150,12 @@ int main(int argc, char* argv[]) {
         }
         std::ostringstream cmd;
         cmd << cxx << ' ' << final << " -o " << output;
-        std::cout << "Linking files together..." << termcolor::green << "Done\n" << termcolor::reset;
-        std::system(cmd.str().c_str());
+        if(!error) std::cout << "Linking files together..." << termcolor::green << "Done\n" << termcolor::reset;
+        else {
+            std::cout << "Build is unsuccessful...\n";
+            return 1;
+        }
+        if(!error) std::system(cmd.str().c_str());
     }
     return 0;
 }
