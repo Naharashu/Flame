@@ -131,8 +131,10 @@ public:
   std::string id;
   astptr val;
   bool is_const;
-  AssignmentNode(const std::string &id_, astptr val_, bool isconst=false)
-      : id(id_), val(std::move(val_)), is_const(isconst) {
+  bool isptr;
+  bool ismoving=false;
+  AssignmentNode(const std::string &id_, astptr val_, bool isconst=false, bool isptr_=false, bool ismov=false)
+      : id(id_), val(std::move(val_)), is_const(isconst), isptr(isptr_), ismoving(ismov) {
     kind = ast_type::ASSIGN;
   };
 
@@ -147,9 +149,9 @@ public:
   bool is_const;
   std::string struct_id;
   bool is_ptr;
-  bool is_ref=false;
-  AssignmentNodeExpr(const token_type &t_, const std::string &id_, astptr val_, bool isconst=false, const std::string &s="", bool isptr=false, bool isref=false)
-      : type_(t_), id(id_), val(std::move(val_)), is_const(isconst), struct_id(s), is_ptr(isptr), is_ref(isref) {
+  bool is_mov=false;
+  AssignmentNodeExpr(const token_type &t_, const std::string &id_, astptr val_, bool isconst=false, const std::string &s="", bool isptr=false, bool ismov=false)
+      : type_(t_), id(id_), val(std::move(val_)), is_const(isconst), struct_id(s), is_ptr(isptr), is_mov(ismov) {
     kind = ast_type::DEFINEVAR;
   };
 

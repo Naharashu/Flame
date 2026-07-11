@@ -28,7 +28,7 @@ astptr parser::parse_factor()
     }
     else if (tok.type == token_type::ID)
     {
-        std::string id = variant2string(tok.str_value);
+        std::string id = tok.str_value;
         if (peek().type == L_BRACKET)
         {
             if (!exist(tok.str_value))
@@ -241,6 +241,9 @@ astptr parser::parse_factor()
                         throw ParseTimeError("\tUse-after-free of pointer '" + tok.str_value + "'\n");
                     }
             }
+        }
+        if(search(id).is_moved) {
+            ParserError("\tCannot use moved pointer '"+id+"'\n", tok);
         }
         return std::make_unique<Node>(tok, search(tok.str_value).is_ptr);
     }
@@ -960,10 +963,34 @@ astptr parser::parse_assignment(bool is_const, bool comptime, const std::string 
             parser::column = type.column;
             throw ParseTimeError("\tVariable '" + variant2string(type.str_value) + "' is constant'\n");
         }
+        std::string mov_from = "";
+        const u64 rollback = indx;
+        while(peek().type!=SEMI) {
+            token t = consume();
+            if(t.type==ID) {
+                symbol* s = searchptr(t.str_value);
+                if(!s || !s->is_ptr) continue;
+                if(s->is_moved) {
+                    ParserError("\t'"+t.str_value+"' is already moved\n", t);
+                }
+                if(s->type!=search(type.str_value).type) {
+                    ParserError("\tCannot move pointer '"+t.str_value+"' to '"
+                        + type.str_value + "', because types dont match\n"
+                        , t);
+                }
+                mov_from = s->name;
+            }
+        }
+        indx = rollback;
         consume(EQ);
         astptr value = parse_or();
+        if(mov_from!="") {
+            symbol* s = searchptr(mov_from);
+            if(s) s->is_moved=true;
+        }
+        const bool ismov = mov_from!="";
         consume(SEMI);
-        return std::make_unique<AssignmentNode>(type.str_value, std::move(value), is_const);
+        return std::make_unique<AssignmentNode>(type.str_value, std::move(value), is_const, search(type.str_value).is_ptr, ismov);
     }
     if (!is_it_type(type) || is_struct(type.str_value))
     {
@@ -977,11 +1004,7 @@ astptr parser::parse_assignment(bool is_const, bool comptime, const std::string 
         token id = consume(token_type::ID);
         std::string id_value = id.str_value;
 
-        for(auto & i : freed_list) {
-            if(i==id_value) {
-                i="";
-            }
-        }
+
         if (exist_in_scope(id_value, table.size() - 1) && !exist_in_scope(id_value, 0))
         {
             parser::line = id.line;
@@ -1013,16 +1036,35 @@ astptr parser::parse_assignment(bool is_const, bool comptime, const std::string 
             return std::make_unique<AssignmentNodeExpr>(type.type, id.str_value, astptr{}, is_const, "", true);
         }
         consume(EQ);
-        bool isref = false;
-        if(peek().type==REF) {
-            consume(REF);
-            isref = true;
+        std::string mov_from = "";
+        const u64 rollback = indx;
+        while(peek().type!=SEMI) {
+            token t = consume();
+            if(t.type==ID) {
+                symbol* s = searchptr(t.str_value);
+                if(!s && !s->is_ptr) continue;
+                if(s->is_moved) {
+                    ParserError("\t'"+t.str_value+"' is already moved\n", t);
+                }
+                if(s->type!=type.type) {
+                    ParserError("\tCannot move pointer '"+t.str_value+"' to '"
+                        + id.str_value + "', because types dont match\n"
+                        , t);
+                }
+                mov_from = s->name;
+            }
         }
+        indx = rollback;
         astptr value = parse_factor();
         consume(SEMI);
-        if(is_module) insert(struct_ + id.str_value, type.type, nothing{}, is_const, 1, false, false,false,true, filename, false, isref);
-        else insert(struct_ + id.str_value, type.type, nothing{}, is_const, 1, false, false,false,true, "", false, isref);
-        return std::make_unique<AssignmentNodeExpr>(type.type, id.str_value, std::move(value), is_const, "", true, isref);
+        if(mov_from!="") {
+            symbol* s = searchptr(mov_from);
+            if(s) s->is_moved=true;
+        }
+        const bool ismov = mov_from!="";
+        if(is_module) insert(struct_ + id.str_value, type.type, nothing{}, is_const, 1, false, false,false,true, filename);
+        else insert(struct_ + id.str_value, type.type, nothing{}, is_const, 1, false, false,false,true, "");
+        return std::make_unique<AssignmentNodeExpr>(type.type, id.str_value, std::move(value), is_const, "", true, ismov);
     }
     token id = consume(token_type::ID);
     std::string id_value = id.str_value;
@@ -1054,13 +1096,13 @@ astptr parser::parse_assignment(bool is_const, bool comptime, const std::string 
     {
         consume();
         if(is_module) insert(struct_ + id.str_value, type.type, nothing{}, is_const, false, false, false, false, false, filename);
-        else insert(struct_ + id.str_value, type.type, nothing{}, is_const, false, false, false, false, false);
+        else insert(struct_ + id.str_value, type.type, nothing{}, is_const,1, false, false, false, false);
         return std::make_unique<AssignmentNodeExpr>(type.type, id.str_value, astptr{}, is_const);
     }
     consume(token_type::EQ);
     astptr value = parse_or();
     if(is_module&&!comptime) insert(struct_ + id.str_value, type.type, nothing{}, is_const, false, false, false, false, false, filename);
-    else insert(struct_ + id.str_value, type.type, nothing{}, is_const, false, comptime);
+    else insert(struct_ + id.str_value, type.type, nothing{}, is_const, false, false, comptime, false, false);
     consume(SEMI);
     return std::make_unique<AssignmentNodeExpr>(type.type, id.str_value, std::move(value), is_const);
 }

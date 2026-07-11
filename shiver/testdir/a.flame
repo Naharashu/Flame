@@ -1,13 +1,23 @@
 use stdlib;
 use strings;
 
-func test(string s) void {
-	s += "a";
+struct point {
+	i32 x=1;
+	i32 y=1;
+};
+
+func test(ref i32 a) i32 {
+	return a;
 }
 
 func main() i32 {
-	string ass = "Hello world";
-	print(strings.contains(ass, "world"));
-	print("aa"+"bb");
+	string* ass = "hi";
+	print(ass);
+	point* s;
+	i32* a=2;
+	i32* b=a;
+	stdlib.println(s.x);
+	i32* x = 42;
+	stdlib.println(test(x))
 	return 0;
 }

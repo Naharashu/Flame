@@ -1,4 +1,4 @@
-// Stdlib v1.3.1 by Naharashu (29.07.26)
+// Stdlib v1.3.2 by Naharashu (11.07.26)
 // MIT License
 func abs(i64 a) i64 {
     if(a > 0) {
@@ -53,7 +53,8 @@ func fshiftl(f64 a, i8 n) f64 {
     return a*(pow(2,n));
 }
 
-func println() void {
+func println(auto s) void {
+    print(s);
     print("\n");
     return;
 }

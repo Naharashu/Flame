@@ -97,6 +97,10 @@ std::string BinaryNode::gen(generator &g)
 std::string AssignmentNode::gen(generator &g)
 {
     std::string value = val ? g.gencode(val) : "";
+    if(ismoving) {
+        if(isptr) return id + " = std::move(" + value.substr(1) + ")";
+    }
+    if(isptr) return "*" + id + (value.empty() ? "" : " = " + value);
     return id + (value.empty() ? "" : "=" + value);
 }
 
@@ -137,8 +141,11 @@ std::string AssignmentNodeExpr::gen(generator &g)
         type += "auto";
     type += struct_id;
     if(is_ptr) {
-        if(val) return type + "* " + id + "=" + "new " + type + "(" + g.gencode(val) + ")";
-        else return type + "* " + id + "=" + "new " + type;
+        if(val) {
+            if(is_mov) return "std::unique_ptr<" + type +  "> " + id + "=" + "std::move(" + g.gencode(val).substr(1) + ")";
+            else return "std::unique_ptr<" + type +  "> " + id + "=" + "std::make_unique<" + type + ">(" + g.gencode(val) + ")";
+        }
+        else return "std::unique_ptr<" + type +  "> " + id + "=" + " std::make_unique<" + type + ">()";
     }
     if(struct_id!="") return type + " " + id;
     return const_ + type + ' ' + id + (val ? "=" + g.gencode(val) : "=" + nullval);

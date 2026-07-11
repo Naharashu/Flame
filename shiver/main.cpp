@@ -1,4 +1,5 @@
 #include "toml.hpp"
+#include <chrono>
 #include <cstdlib>
 #include <cstring>
 #include <filesystem>
@@ -7,10 +8,12 @@
 #include <sstream>
 #include <termcolor/termcolor.hpp>
 
+
 int main(int argc, char* argv[]) {
     bool init = false;
     bool skip_init = false;
     bool build = false;
+    bool verbose = false;
     for(int i=1;i<argc;i++) {
         if(strcmp(argv[i], "init")==0) {
             init = true;
@@ -18,6 +21,12 @@ int main(int argc, char* argv[]) {
             skip_init = true;
         } else if(strcmp(argv[i], "build")==0) {
             build = true;
+        } else if(strcmp(argv[i], "verbose")==0) {
+            verbose = true;
+        } else if(strcmp(argv[i], "version")==0) {
+            std::cout << "Shiver 1.0 by Naharashu\n"
+            << "MIT License\n"
+            << "Made with love\n";
         }
     }
 
@@ -115,6 +124,7 @@ int main(int argc, char* argv[]) {
             ver = "1.0.0";
         }
         std::cout << "Starting building " << name << '@' << ver << "...\n";
+        auto start = std::chrono::high_resolution_clock::now();
         std::filesystem::create_directory("./build");
         for(auto &x : src) {
             for(auto &y : std::filesystem::recursive_directory_iterator(x)) {
@@ -124,6 +134,7 @@ int main(int argc, char* argv[]) {
                     std::string cmd_ = "flame -C "; cmd_ += x + '/' + name; cmd_ += " -o ./build/" + n;
                     std::cout << "Compiling " << termcolor::bright_yellow << x << '/' <<  name << termcolor::reset
                     << " into C++...\n";
+                    if(verbose) std::cout << termcolor::blue << "[VERBOSE]: " << termcolor::reset << cmd_ << '\n';
                     int ret = std::system(cmd_.c_str());
                     if(ret!=0) {
                         error = true;
@@ -146,16 +157,22 @@ int main(int argc, char* argv[]) {
             cmd << cxx << " -c " << cxxflags << " ./build/" << x << ".cpp -o ./build/" << x << ".o";
             std::cout << "Compiling " << termcolor::bright_yellow << x << termcolor::reset
             << " into object file...\n";
+            if(verbose) std::cout << termcolor::blue << "[VERBOSE]: " << termcolor::reset << cmd.str() << '\n';
             std::system(cmd.str().c_str());
         }
         std::ostringstream cmd;
         cmd << cxx << ' ' << final << " -o " << output;
-        if(!error) std::cout << "Linking files together..." << termcolor::green << "Done\n" << termcolor::reset;
+        if(verbose) std::cout << termcolor::blue << "[VERBOSE]: " << termcolor::reset << cmd.str() << '\n';
+        if(!error) std::cout << "Linking files together...";
         else {
             std::cout << "Build is unsuccessful...\n";
             return 1;
         }
-        if(!error) std::system(cmd.str().c_str());
+        std::system(cmd.str().c_str());
+        // very long but its just (end-start)->to millisec-> to double
+        double time_end = static_cast<double>(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count());
+        std::cout << termcolor::green << "Done\n" << termcolor::reset;
+        std::cout << "Buid is successful (" << time_end/1000 << "s)\n";
     }
     return 0;
 }

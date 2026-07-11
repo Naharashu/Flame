@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -O2 -march=x86-64
+CXXFLAGS = -O2 -march=x86-64 -pipe
 HOME_ = $(HOME)
 
 all: main

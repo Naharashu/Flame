@@ -55,14 +55,14 @@ std::vector<token> lexer::lex(std::string src) {
       }
       if(next == '*') {
         i+=2;
-        while(src.at(i)!='*'&&src.at(i+1)!='/') {
+        while(!(src.at(i)=='*'&&src.at(i+1)=='/')) {
           if(src[i]=='\n') {
             l++;
             col=0;
           }
           i++;
         }
-        i++;
+        i+=2;
         continue;
       }
       lexed.push_back(create_token(SLASH, nothing{}, l, col));

@@ -63,7 +63,15 @@ void insert_top(const std::string &name,token_type type, token_value val,bool is
 
 bool exist(const std::string &name);
 
-
+/**
+ * @brief Check if exist in scope
+ * 
+ * @param name name of object
+ * @param lvl scope level
+ * @return bool returns true if exist, else false
+ * @deprecated Use exist(name) instead
+ */
+[[deprecated("Use exist(name) instead, its automaticaly will give first found")]]
 bool exist_in_scope(const std::string &name, unsigned int lvl);
 
 inline fsymbol* fsearch(const std::string &name) {
@@ -116,3 +124,9 @@ inline bool is_struct(const std::string &name) {
 
 bool exist_module(const std::string &name, const std::string &modname);
 symbol search_module(const std::string &name, const std::string &modname="");
+
+
+inline void insert_symbol(const std::string &name, const symbol &s) {
+    if(table.empty()) [[unlikely]] return;
+    table[table.size()-1].insert_or_assign(name, s);
+}

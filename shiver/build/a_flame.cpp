@@ -2,11 +2,13 @@
 #include <cstdint>
 #include <array>
 #include <vector>
+#include <memory>
 namespace stdlib {
 #include <iostream>
 #include <cstdint>
 #include <array>
 #include <vector>
+#include <memory>
 int64_t abs(int64_t a)  {
     if((a > 0)) {
         return a;
@@ -59,7 +61,8 @@ double fshiftl(double a, int8_t n)  {
     return (a * pow(2, n));
 }
 
-void println()  {
+void println(auto s)  {
+    std::cout << s;
     std::cout << "\n";
     return;
 }
@@ -70,6 +73,7 @@ namespace strings {
 #include <cstdint>
 #include <array>
 #include <vector>
+#include <memory>
 uint32_t len(std::string s)  {
     uint32_t len=0;
     while((s[len] != 0))  {
@@ -135,14 +139,23 @@ bool contains(std::string s, std::string sub)  {
 }
 
 }
-void test(std::string s)  {
-    s += "a";
+struct point {
+    int32_t x=1;
+    int32_t y=1;
+};
+int32_t test(int32_t  &a)  {
+    return a;
 }
 
 int32_t main()  {
-    std::string ass="Hello world";
-    std::cout << strings::contains(ass, "world");
-    std::cout << (ass + 3);
+    std::unique_ptr<std::string> ass=std::make_unique<std::string>("hi");
+    std::cout << *ass;
+    std::unique_ptr<point> s= std::make_unique<point>();
+    std::unique_ptr<int32_t> a=std::make_unique<int32_t>(2);
+    std::unique_ptr<int32_t> b=std::move(a);
+    stdlib::println(s->x);
+    std::unique_ptr<int32_t> x=std::make_unique<int32_t>(42);
+    stdlib::println(test(*x));
     return 0;
 }
 
