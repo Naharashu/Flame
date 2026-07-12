@@ -74,7 +74,8 @@ public:
   u64 size_if_array=0;
   bool ref=false;
   bool isconst=false;
-  ArgumentNode(const token& t, const token& id_, bool isarr, u64 s, bool f=false, bool ic=false) : type(t), id(id_), is_array(isarr), size_if_array(s), ref(f), isconst(ic) {
+  bool ismut = false;
+  ArgumentNode(const token& t, const token& id_, bool isarr, u64 s, bool f=false, bool ic=false, bool ism=false) : type(t), id(id_), is_array(isarr), size_if_array(s), ref(f), isconst(ic), ismut(ism) {
     kind = ast_type::FUNC_ARG;
   };
   void print() const override {}

@@ -6,18 +6,17 @@ struct point {
 	i32 y=1;
 };
 
-func test(ref i32 a) i32 {
+
+
+func test(ref f32 a) f32 {
 	return a;
 }
 
+
+
+
 func main() i32 {
 	string* ass = "hi";
-	print(ass);
-	point* s;
-	i32* a=2;
-	i32* b=a;
-	stdlib.println(s.x);
-	i32* x = 42;
-	stdlib.println(test(x))
+	
 	return 0;
 }

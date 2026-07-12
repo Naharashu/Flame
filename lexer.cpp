@@ -254,6 +254,8 @@ std::vector<token> lexer::lex(std::string src) {
         lexed.push_back(create_token(THIS, nothing{}, l, col));
       else if (id == "ref")
         lexed.push_back(create_token(REF, nothing{}, l, col));
+      else if (id == "mut")
+        lexed.push_back(create_token(MUT, nothing{}, l, col));
       else if (id == "namespace")
         lexed.push_back(create_token(NAMESPACE, nothing{}, l, col));
       else

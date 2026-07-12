@@ -60,7 +60,7 @@ astptr parser::parse_factor()
                         throw ParseTimeError("\tExpected " + std::to_string(f->args.size()) + " arguments, got " +
                                              std::to_string(arg_i) + "\n");
                     }
-                    if (search(c.str_value).type != f->args[arg_i].type && f->type != FUNC)
+                    if (search(c.str_value).type != f->args[arg_i].type)
                     {
                         parser::line = c.line;
                         parser::column = c.column;
@@ -77,22 +77,6 @@ astptr parser::parse_factor()
                     }
                 }
                 arg_i++;
-                if(is_freeing) {
-                    token ptr = consume(ID);
-                    for(auto &x : freed_list) {
-                        if(x==ptr.str_value) {
-                            parser::line = ptr.line;
-                            parser::column = ptr.column;
-                            throw ParseTimeError("\tPointer " + ptr.str_value + " is already freed\n");
-                        }
-                    }
-                    for(auto &x : notfreed_list) {
-                        if(x==ptr.str_value) x="";
-                    }
-                    freed_list.push_back(ptr.str_value);
-                    args_.push_back(std::make_unique<Node>(ptr));
-                    break;
-                }
                 args_.push_back(parse_or());
                 if (peek().type == COMA)
                     consume();
@@ -158,9 +142,7 @@ astptr parser::parse_factor()
                 }
             }
             if (have_id)
-                std::cerr << "\x1b[0;33mWarning:" << filename << ":" << std::to_string(tok.line) << ":" + std::to_string(tok.column)
-                          << ":\n\taccesing array '" << id
-                          << "' with not compile time index, it may lead to errors \x1b[0m\n";
+                ParserWarning("\taccesing array '" + id + "' with not compile time index, it may lead to errors", tok, "NonCompileTimeIndex");
             auto *val = get_if<bool>(&array.value);
             if (val && *val == 1)
             {
@@ -196,9 +178,7 @@ astptr parser::parse_factor()
                     throw ParseTimeError("\tUnderflowed index of array '" + id + "'\n");
                 }
             }
-            std::cerr << "\x1b[0;33mWarning:" << filename << ":" << std::to_string(tok.line) << ":" + std::to_string(tok.column)
-                      << ":\n\taccesing array '" << id
-                      << "' with not compile time index, it may lead to errors \x1b[0m\n";
+            ParserWarning("\taccesing array '" + id + "' with not compile time index, it may lead to errors", tok, "NonCompileTimeIndex");
             astptr value = parse_expr();
             return std::make_unique<ArrayChangeNode>(tok, std::move(i), std::move(value));
         }
@@ -504,9 +484,35 @@ astptr parser::parse_or()
     return node;
 }
 
-astptr parser::parse_return()
+astptr parser::parse_return(const token_type& expectedType, bool isptr_return)
 {
     consume(RETURN);
+    u64 rollback = indx; // rollback index
+    // code analyse
+    while(peek().type!=SEMI&&!(expectedType==NULL_)) {
+        token t = consume();
+        if(t.type==ID) {
+            // if return ID or similar
+            symbol s = search(t.str_value);
+            // if return x is i32 but function returning string
+            if(s.type!=expectedType) {
+                // integer type promotion
+                if(!(s.type<expectedType)&&expectedType<STRING) {
+                    ParserWarning("\tHidden int casting", t, "HiddenCast");
+                }
+                else {
+                    ParserError("\tCannot return '" + disassemble_tok_type(s.type) +
+                 "', expected '" + disassemble_tok_type(expectedType) + "'\n" 
+                    , t);
+                }
+            }
+            // if func dummy() i32* {} but we returning i32 
+            if(!s.is_ptr&&isptr_return) {
+                ParserError("\tExpected returning pointer\n", t);
+            }
+        }
+    }
+    indx = rollback;
     if (peek().type == SEMI)
     {
         consume(SEMI);
@@ -517,7 +523,7 @@ astptr parser::parse_return()
     return std::make_unique<ReturnNode>(std::move(node));
 }
 
-astptr parser::parse_block(const std::string &func = "")
+astptr parser::parse_block(const token_type& expectedType, bool isptr_return)
 {
     table.emplace_back();
     consume(L_BRACES);
@@ -525,8 +531,13 @@ astptr parser::parse_block(const std::string &func = "")
     bool seen_return = false;
     while (peek().type != R_BRACES && indx < src.size())
     {
-        if (peek().type == RETURN)
+        if (peek().type == RETURN) {
             seen_return = true;
+            if(expectedType !=NULL_) {
+                stmts.emplace_back(parse_return(expectedType, isptr_return));
+                continue;
+            }
+        }
         try
         {
             stmts.push_back(parse_statement());
@@ -563,9 +574,13 @@ astptr parser::parse_func_statement(const std::string &struct_)
             consume(CONST);
             is_const = true;
         }
+        if(peek().type == MUT) {
+            bool is_const = false;
+        }
         if (peek().type==REF)
         {
             consume(REF);
+            is_const = true;
             is_ref = true;
         }
         token type = consume();
@@ -595,20 +610,22 @@ astptr parser::parse_func_statement(const std::string &struct_)
                                  "', expected i8..i64, u8..u64, bool, string, f32, f64, auto or Type[]\n");
         }
         insert(arg_id.str_value, type.type, nothing{}, false, i);
-        astptr argument = std::make_unique<ArgumentNode>(type, arg_id, is_array, i, is_ref, is_const);
+        astptr argument = std::make_unique<ArgumentNode>(type, arg_id, is_array, i, is_ref, is_const, is_const);
         args_.push_back(std::move(argument));
         finsert_arg(id.str_value,
-                    {.type = type.type,
+                    symbol{.type = type.type,
                      .value = nothing{},
-                     .is_const = false,
+                     .is_const = is_const,
                      .size = i,
                      .is_array = is_array,
-                     .name = arg_id.str_value});
+                     .name = arg_id.str_value
+                    });
         if (peek().type == COMA)
             consume();
     }
     consume(R_BRACKET);
     token return_type = consume();
+    bool is_ptr = peek().type == STAR;
     bool is_array = false;
     u64 size = 1;
     if (peek().type == L_SQ_BRACKET)
@@ -627,7 +644,7 @@ astptr parser::parse_func_statement(const std::string &struct_)
         throw ParseTimeError("\tUnknown return type in " + id.str_value +
                              ", expected i8..64, u8..64, bool, string, void, f32, f64, auto\n");
     }
-    astptr block = parse_block(id.str_value);
+    astptr block = parse_block(return_type.type);
     if (!returning && return_type.type != VOID_TYPE)
     {
         parser::line = id.line;
@@ -635,6 +652,7 @@ astptr parser::parse_func_statement(const std::string &struct_)
         throw ParseTimeError("\tFunction " + id.str_value + " doesnt have returning\n");
     }
     table.pop_back();
+    returning = false;
     if(is_module) insert(struct_ + id.str_value, FUNC, nothing{}, false,1, false, false, false, false, filename);
     else insert(struct_ + id.str_value, FUNC, nothing{});
     return std::make_unique<FuncNode>(id, return_type, std::move(args_), std::move(block), is_array, size);
@@ -1173,7 +1191,7 @@ astptr parser::parse_method()
                         throw ParseTimeError("\tExpected " + std::to_string(f->args.size()) + " arguments, got " +
                                              std::to_string(arg_i) + "\n");
                     }
-                    if (search(c.str_value).type != f->args[arg_i].type && f->type != FUNC)
+                    if (search(c.str_value).type != f->args[arg_i].type)
                     {
                         parser::line = c.line;
                         parser::column = c.column;
@@ -1272,6 +1290,7 @@ astptr parser::parse_module_call(const std::string &name) {
                 token n = peek(1);
                 if ((c.type == ID && (n.type == COMA || n.type == R_BRACKET) && f))
                 {
+                    //if(search_module(c.str_value, name).type!)
                     if (arg_i >= f->args.size())
                     {
                         parser::line = c.line;
@@ -1279,7 +1298,7 @@ astptr parser::parse_module_call(const std::string &name) {
                         throw ParseTimeError("\tExpected " + std::to_string(f->args.size()) + " arguments, got " +
                                              std::to_string(arg_i) + "\n");
                     }
-                    if (search_module(c.str_value, name).type != f->args[arg_i].type && f->type != FUNC)
+                    if (search_module(c.str_value, name).type != f->args[arg_i].type)
                     {
                         parser::line = c.line;
                         parser::column = c.column;

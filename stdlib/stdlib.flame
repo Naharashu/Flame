@@ -18,7 +18,7 @@ func sqrt(f64 a) f64 {
 }
 
 func floor_helper(f64 a) f64 {
-    i64 res = a;
+    f64 res = a;
     if(a<0 && a!=res) {
         return res-1;
     }
@@ -37,7 +37,7 @@ func fmod(f64 a, f64 b) f64 {
     return res;
 }
 
-func pow(f64 a, i32 b) f64 {
+func pow(f64 a, i8 b) f64 {
     f64 res = a;
     for(i32 i=1;i<b;i++) {
         res *= a;

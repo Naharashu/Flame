@@ -28,12 +28,11 @@ class ParseTimeError : public std::exception {
 
 class parser {
     public:
-    std::vector<token> src;
-    u64 indx;
-    u64 line=0;
-    u64 column=0;
-    bool factor_decl_mode = false;
-    std::string filename;
+    std::vector<token> src; // raw lexed tokens
+    u64 indx; // index in src
+    u64 line=0; // line for debug
+    u64 column=0; // column for debug
+    std::string filename; // filename
     bool errors=false;
     bool is_module=false;
     explicit parser(const std::vector<token> &a, const std::string &f) {
@@ -41,12 +40,30 @@ class parser {
         indx = 0;
         filename = f;
     }
-    bool returning=false;
+    bool returning=false; // internal: is parse_block seen return for function
 
+    /**
+     * @brief Prints error
+     * 
+     * @param error text for error msg
+     * @param tok for line and column 
+     */
     inline void ParserError(const std::string &error, const token &tok) {
         line = tok.line;
         column = tok.column;
         throw ParseTimeError(error);
+    }
+
+    /**
+     * @brief Prints warning
+     * 
+     * @param warning Text you want to print as warning
+     * @param tok for line and column
+     * @param warntype additional text as warning type 
+     */
+    inline void ParserWarning(const std::string &warning, const token &tok, const std::string& warntype="BasicWarning") {
+        std::cerr << "\x1b[0;33m" << filename << ":" << std::to_string(tok.line) << ":" + std::to_string(tok.column)
+                          << ":  warning(" << warntype << ")\n" << warning << '\n' << "\x1b[0m\n";
     }
 
     astptr parse_expr();
@@ -61,8 +78,8 @@ class parser {
     astptr parse_if_statement();
     astptr parse_while_statement();
     astptr parse_for_statement();
-    astptr parse_return();
-    astptr parse_block(const std::string &func);
+    astptr parse_return(const token_type& expectedType=NULL_, bool isptr_return=false);
+    astptr parse_block(const token_type& expectedType=NULL_, bool isptr_return=false);
     astptr parse_func_statement(const std::string &struct_="");
     astptr parse_use();
     astptr parse_comparison();
@@ -77,6 +94,7 @@ class parser {
     astptr parse_module_call(const std::string &name="");
     astptr parse_struct();
     astptr parse_assignment(bool is_const=false, bool comptime=false, const std::string &struct_="");
+
     token consume() {
         if(indx >= src.size()) {
             throw ParseTimeError("\tUnexpected end of input\n");
@@ -106,13 +124,10 @@ class parser {
         }
         return src.at(indx+i);
     }
-    std::vector<token> peek_(int n) {
-        std::vector<token> res;
-        for(u64 i=indx;i<indx+n;i++) {
-            res.push_back(src.at(i));
-        }
-        return res;
-    }
+
+    /**
+     * @brief Skip to the nearest ; or }
+     */
     void sync() {
         while(true) {
             token_type c = peek().type;

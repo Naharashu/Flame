@@ -276,9 +276,10 @@ std::string ArgumentNode::gen(generator &g)
 {
     (void)g;
     std::string type_;
-    if(isconst) type_ += "const ";
+    if(isconst&&!ref) type_ += "const ";
     type_ += type_in_cpp(type);
-    if(ref) return type_ + " &" + id.str_value;
+    if(ref) return "const " + type_ + "&" + id.str_value;
+    if(ismut) return type_ + "&" + id.str_value;
     if(is_array) 
         return "std::array<"+type_in_cpp(type)+','+std::to_string(size_if_array)+">"+id.str_value;
     return type_ + id.str_value;
