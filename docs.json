@@ -11,7 +11,8 @@
         "group": "Home",
         "pages": [
           "index",
-          "types"
+          "types",
+          "installation"
         ]
       }
     ]
