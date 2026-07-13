@@ -5,8 +5,7 @@
 #include <utility>
 
 std::vector<std::string> struct_list;
-std::vector<std::string> freed_list;
-std::vector<std::string> notfreed_list;
+
 std::vector<std::unordered_map<std::string, symbol>> table;
 std::unordered_map<std::string, fsymbol> ftable;
 std::vector<std::string> loadedModules;
