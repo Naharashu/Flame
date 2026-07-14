@@ -3,4 +3,28 @@ title: "Variables"
 icon: "square-root-variable"
 ---
 
-Flame has
+Flame has several types of functions. Basic variable declared as `type varname = value` :
+
+```shellscript
+i32 x = 42;
+```
+
+But Flame also have `const` for constants and `comptime` for compile time variables:
+
+```shellscript
+const i32 PI = 3.14; // cannot change value
+comptime i32 z = 13; // doesnt exist at runtime
+```
+
+Also for function argument we have `ref` as immutable reference and `mut ref` as mutable:
+
+```shellscript
+func test(ref i32 a) i32 {
+   return a; // a cannot be changed
+}
+
+func test2(mut ref i32 b) i32 {
+   a += 1;
+   return a; // a can be changed
+}
+```
