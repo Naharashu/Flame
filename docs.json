@@ -9,7 +9,11 @@
     "groups": [
       {
         "group": "Home",
-        "pages": ["index"]
+        "pages": [
+          "index",
+          "Installation",
+          "Types"
+        ]
       }
     ]
   }
