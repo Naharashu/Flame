@@ -15,7 +15,8 @@
           "Types",
           "variables",
           "comments",
-          "functions"
+          "functions",
+          "structs"
         ]
       }
     ]
