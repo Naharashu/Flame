@@ -3,9 +3,6 @@ CXX_FLAGS = -std=c++20 -g -O1 -Wall -Wextra
 CXX_OBJ = build/lexer.o build/parser.o build/main.o build/ast.o build/table.o
 HOME_ = $(HOME)
 
-clang: CXX = clang++
-clang: main
-
 all: main
 
 debug: CXX_FLAGS = -std=gnu++20 -g3 -O0 -Wall -Wextra
