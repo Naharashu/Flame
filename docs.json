@@ -20,5 +20,13 @@
       }
     ]
   },
-  "description": "Flame programming language docs"
+  "description": "Flame programming language docs",
+  "logo": {
+    "light": "/images/fire.png",
+    "dark": "/images/fire.png"
+  },
+  "favicon": {
+    "light": "/images/fire.png",
+    "dark": "/images/fire.png"
+  }
 }
