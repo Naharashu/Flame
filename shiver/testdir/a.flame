@@ -1,4 +1,4 @@
-//use stdlib;
+use stdlib;
 //use strings;
 
 struct point {
@@ -17,8 +17,11 @@ func test(mut ref f32 a) f32 {
 func main() i32 {
 	//string* ass = "hi";
 	//print(ass[0], ass[1]);
+	i32* t = 3;
+	point p;
+	i32[3] x = [1,2,3];
 	string s = "hi";
 	i32 a = 10;
 	a ^=20;
-	return 0;
+	return a;
 }
