@@ -23,6 +23,9 @@ func main() i32 {
 	string s = "hi";
 	i32 a = 10;
 	a ^=20;
+	s[1] = 65;
 	a = stdlib.PI;
+	a = s[1];
+	print(std.fmt("{}\n", a));
 	return a;
 }

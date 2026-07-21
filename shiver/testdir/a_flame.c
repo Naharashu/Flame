@@ -2,6 +2,17 @@
 #include <stdint.h>
 #include <oxygen_runtime.h>
 const int64_t stddef_flame_I64_MIN=(-9223372036854775807 - 1);
+const int64_t stddef_flame_I64_MAX=9223372036854775807;
+const int32_t stddef_flame_I32_MIN=-2147483648;
+const int32_t stddef_flame_I32_MAX=2147483647;
+const int16_t stddef_flame_I16_MIN=-32768;
+const int64_t stddef_flame_I16_MAX=32767;
+const int8_t stddef_flame_I8_MIN=-127;
+const int8_t stddef_flame_I8_MAX=127;
+const uint64_t stddef_flame_U64_MAX=-1;
+const uint32_t stddef_flame_U32_MAX=4294967295;
+const uint16_t stddef_flame_U16_MAX=65535;
+const uint8_t stddef_flame_U8_MAX=255;
 int64_t stdlib_flame_abs(int64_t stdlib_flame_a)  {
     if((stdlib_flame_a == stddef_flame_I64_MIN)) {
         return 9223372036854775807;
@@ -84,7 +95,9 @@ int32_t main()  {
     oxygen_new_string( &s, "hi");
     int32_t a=10;
     a ^= 20;
+    oxygen_string_set(&s, 1, 65);
     a=stdlib_flame_PI;
+    a=oxygen_string_get(&s, 1);
     oxygen_string_destroy(&s);
     free(t);
     return a;
