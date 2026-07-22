@@ -1,11 +1,18 @@
 use stdlib;
 //use strings;
+use std;
 
 struct point {
 	i32 x=1;
 	i32 y=1;
+	func print_cord() void {
+		print(std.fmt("x is {}, y is {}\n", x, y));
+	} 
+	func inc(i32 x_, i32 y_) void {
+		x += x_;
+		y += y_;
+	}
 };
-
 
 
 func test(mut ref f32 a) f32 {
@@ -15,17 +22,9 @@ func test(mut ref f32 a) f32 {
 
 
 func main() i32 {
-	//string* ass = "hi";
-	//print(ass[0], ass[1]);
-	i32* t = 3;
-	point p;
-	i32[3] x = [1,2,3];
-	string s = "hi";
-	i32 a = 10;
-	a ^=20;
-	s[1] = 65;
-	a = stdlib.PI;
-	a = s[1];
-	print(std.fmt("{}\n", a));
-	return a;
+	print(std.fmt("{} is 1\n", true));
+	point* p;
+	p.inc(2,2);
+	p.print_cord();
+	return 0;
 }

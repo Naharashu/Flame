@@ -1,23 +1,35 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <oxygen_runtime.h>
+#define OXYGEN_REQ_MAJ_V 0
+#define OXYGEN_REQ_MIN_V 2
+#define OXYGEN_REQ_PAT_V 0
+#if OXYGEN_MAJOR_VER < OXYGEN_REQ_MAJ_V
+    #error "Using very out-dated version of Oxygen Runtime!"
+#elif OXYGEN_MINOR_VER < OXYGEN_REQ_MIN_V
+    #warning "Using old version of Oxygen Runtime!"
+#elif OXYGEN_PATCH_VER < OXYGEN_REQ_PAT_V
+    #warning "Using older release of Oxygen Runtime!"
+#endif
 const int64_t stddef_flame_I64_MIN=(-9223372036854775807 - 1);
 const int64_t stddef_flame_I64_MAX=9223372036854775807;
 const int32_t stddef_flame_I32_MIN=-2147483648;
 const int32_t stddef_flame_I32_MAX=2147483647;
 const int16_t stddef_flame_I16_MIN=-32768;
-const int64_t stddef_flame_I16_MAX=32767;
-const int8_t stddef_flame_I8_MIN=-127;
+const int16_t stddef_flame_I16_MAX=32767;
+const int8_t stddef_flame_I8_MIN=-128;
 const int8_t stddef_flame_I8_MAX=127;
 const uint64_t stddef_flame_U64_MAX=-1;
 const uint32_t stddef_flame_U32_MAX=4294967295;
 const uint16_t stddef_flame_U16_MAX=65535;
 const uint8_t stddef_flame_U8_MAX=255;
+const uint8_t stddef_flame_EXIT_OK=0;
+const uint8_t stddef_flame_EXIT_ERR=1;
 int64_t stdlib_flame_abs(int64_t stdlib_flame_a)  {
-    if((stdlib_flame_a == stddef_flame_I64_MIN)) {
+    if(stdlib_flame_a == stddef_flame_I64_MIN) {
         return 9223372036854775807;
     };
-    if((stdlib_flame_a > 0)) {
+    if(stdlib_flame_a > 0) {
         return stdlib_flame_a;
     };
     return -stdlib_flame_a;
@@ -34,14 +46,14 @@ double stdlib_flame_sqrt(double stdlib_flame_a)  {
 
 double stdlib_flame_floor_helper(double stdlib_flame_a)  {
     double stdlib_flame_res=stdlib_flame_a;
-    if((stdlib_flame_a < 0)) {
+    if(stdlib_flame_a < 0) {
         return (stdlib_flame_res - 1);
     };
     return stdlib_flame_res;
 }
 
 double stdlib_flame_floor(double stdlib_flame_a)  {
-    if(((stdlib_flame_a - stdlib_flame_floor_helper(stdlib_flame_a)) < 0.500000)) {
+    if((stdlib_flame_a - stdlib_flame_floor_helper(stdlib_flame_a)) < 0.500000) {
         return stdlib_flame_floor_helper(stdlib_flame_a);
     };
     return stdlib_flame_floor_helper((stdlib_flame_a + 1));
@@ -75,31 +87,32 @@ void stdlib_flame_println(string stdlib_flame_s)  {
 typedef struct point {
     int32_t x;
     int32_t y;
-} point;
+        } point;
 point point_flame_def_init() {
     point Temp;
     Temp.x = 1;
     Temp.y = 1;
     return Temp;
-};
+}
+void point_print_cord(point* self)  {
+        printf("%s", oxygen_fmt("x is {}, y is {}\n", "ii", self->x, self->y));
+    }
+void point_inc(point* selfint32_t x_, int32_t y_)  {
+        x += x_;
+        y += y_;
+    }
+;
 float test(float * a)  {
     return *a;
 }
 
 int32_t main()  {
-    int32_t* t = malloc(sizeof(int32_t));
-    *t = 3;
-    point p = point_flame_def_init();
-    int32_t x[3] = {1, 2, 3};
-    string s;
-    oxygen_new_string( &s, "hi");
-    int32_t a=10;
-    a ^= 20;
-    oxygen_string_set(&s, 1, 65);
-    a=stdlib_flame_PI;
-    a=oxygen_string_get(&s, 1);
-    oxygen_string_destroy(&s);
-    free(t);
-    return a;
+    printf("%s", oxygen_fmt("{} is 1\n", "b", 1));
+    point* p = malloc(sizeof(point));
+    *p = point_flame_def_init();
+    point_inc(p, 2, 2);
+    point_print_cord(p);
+    free(p);
+    return 0;
 }
 
